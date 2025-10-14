@@ -20,6 +20,7 @@ import {
     Search,
     Sparkles
 } from 'lucide-react';
+import { getFAQById, searchFAQs } from '../api/faqApi';
 
 const ConversationPanel = ({ source, conversations, onUpdateConversations, searchQuery, onSearchChange, autoSend = false, pendingAttachment = null, onConsumeAttachment }) => {
     const [inputMessage, setInputMessage] = useState('');
@@ -91,8 +92,8 @@ const ConversationPanel = ({ source, conversations, onUpdateConversations, searc
         setIsLoading(true);
 
         // Simulate AI response with rich content
-        setTimeout(() => {
-            const aiResponse = generateRichResponse(messageContent, source);
+        setTimeout(async () => {
+            const aiResponse = await generateRichResponse(messageContent, source);
             const finalConversations = [...newConversations, aiResponse];
             onUpdateConversations(finalConversations);
             setIsLoading(false);
@@ -113,16 +114,40 @@ const ConversationPanel = ({ source, conversations, onUpdateConversations, searc
         handleSendMessageWithContent(composed);
     };
 
-    const generateRichResponse = (question, source) => {
+    const generateRichResponse = async (question, source) => {
+        // Check if this is an FAQ question by searching our FAQ database
+        let faqMatch = null;
+        try {
+            const searchResults = await searchFAQs(question);
+            if (searchResults.success && searchResults.data.length > 0) {
+                // Find the best match (exact or very close match)
+                faqMatch = searchResults.data.find(faq =>
+                    faq.question.toLowerCase() === question.toLowerCase() ||
+                    question.toLowerCase().includes(faq.question.toLowerCase()) ||
+                    faq.question.toLowerCase().includes(question.toLowerCase())
+                ) || searchResults.data[0];
+            }
+        } catch (error) {
+            console.error('Error searching FAQs:', error);
+        }
+
+        if (faqMatch) {
+            // Generate enhanced response for FAQ questions
+            return generateFAQResponse(faqMatch, question);
+        }
+
+        // Default response for non-FAQ questions
         return {
             id: Date.now() + 1,
             type: 'ai',
-            content: '', // Không lặp lại câu hỏi
+            content: '',
             timestamp: new Date().toISOString(),
             richContent: {
-                answer: `Dựa trên nội dung từ "${source.title}", đây là câu trả lời chi tiết cho câu hỏi của bạn về "${question}".`,
+                answer: source ?
+                    `Dựa trên nội dung từ "${source.title}", đây là câu trả lời chi tiết cho câu hỏi của bạn về "${question}".` :
+                    `Đây là câu trả lời chi tiết cho câu hỏi của bạn về "${question}".`,
 
-                mainContent: `Trong tài liệu này, chúng ta có thể thấy rằng có nhiều khía cạnh quan trọng cần được phân tích. Đây là một chủ đề phức tạp với nhiều yếu tố tương tác với nhau.`,
+                mainContent: `Trong chủ đề này, chúng ta có thể thấy rằng có nhiều khía cạnh quan trọng cần được phân tích. Đây là một chủ đề phức tạp với nhiều yếu tố tương tác với nhau.`,
 
                 image: {
                     url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&h=300&fit=crop',
@@ -157,6 +182,63 @@ const ConversationPanel = ({ source, conversations, onUpdateConversations, searc
                     'Có ví dụ cụ thể nào khác không?',
                     'Làm thế nào để áp dụng điều này trong thực tế?',
                     'Có tài liệu tham khảo nào khác không?'
+                ]
+            }
+        };
+    };
+
+    const generateFAQResponse = (faq, originalQuestion) => {
+        const programmingImages = {
+            'Programming Fundamentals': 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=500&h=300&fit=crop',
+            'Learning Roadmap': 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&h=300&fit=crop',
+            'Software Engineering Tools': 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&h=300&fit=crop',
+            'Career Path': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=300&fit=crop',
+            'Data Structures & Algorithms': 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=500&h=300&fit=crop',
+            'Modern Tech Stack': 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500&h=300&fit=crop'
+        };
+
+        return {
+            id: Date.now() + 1,
+            type: 'ai',
+            content: '',
+            timestamp: new Date().toISOString(),
+            isFAQResponse: true,
+            faqData: faq,
+            richContent: {
+                answer: faq.detailedAnswer,
+                mainContent: `This is a comprehensive answer about ${faq.category.toLowerCase()}. ${faq.detailedAnswer}`,
+
+                image: {
+                    url: programmingImages[faq.category] || programmingImages['Programming Fundamentals'],
+                    alt: `Illustration for ${faq.category}`,
+                    caption: `Visual representation of ${faq.category} concepts`
+                },
+
+                whyItMatters: `Understanding ${faq.category.toLowerCase()} is crucial for your programming journey because it forms the foundation for building robust, scalable applications and advancing your career in software development.`,
+
+                interactiveList: faq.category === 'Learning Roadmap' ? [
+                    { id: 1, text: 'Master the fundamentals', completed: true },
+                    { id: 2, text: 'Choose your specialization', completed: false },
+                    { id: 3, text: 'Build practical projects', completed: false },
+                    { id: 4, text: 'Join the developer community', completed: false }
+                ] : [
+                    { id: 1, text: 'Understand core concepts', completed: true },
+                    { id: 2, text: 'Practice with examples', completed: false },
+                    { id: 3, text: 'Apply in real projects', completed: false },
+                    { id: 4, text: 'Share knowledge with others', completed: false }
+                ],
+
+                options: {
+                    simply: 'Explain in simpler terms',
+                    goDeeper: 'Provide more technical details',
+                    getImages: 'Show more examples and diagrams'
+                },
+
+                suggestedQuestions: faq.relatedQuestions || [
+                    'Can you provide more specific examples?',
+                    'What are the best practices for this?',
+                    'How long does it typically take to learn this?',
+                    'What resources do you recommend for learning more?'
                 ]
             }
         };
@@ -325,7 +407,27 @@ const ConversationPanel = ({ source, conversations, onUpdateConversations, searc
                                     <div className="space-y-6">
                                         {/* Main Answer - Hannah Learn Style */}
                                         {message.type === 'ai' && message.richContent && (
-                                            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+                                            <div className={`backdrop-blur-sm border rounded-xl p-6 ${
+                                                message.isFAQResponse
+                                                    ? 'bg-blue-900/20 border-blue-500/30'
+                                                    : 'bg-gray-800/50 border-gray-700'
+                                            }`}>
+                                                {message.isFAQResponse && message.faqData && (
+                                                    <div className="mb-4 pb-4 border-b border-blue-500/20">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                                                            <span className="text-blue-300 text-sm font-medium">
+                                                                FAQ Answer • {message.faqData.category}
+                                                            </span>
+                                                            <span className="text-blue-400 text-xs px-2 py-1 bg-blue-900/30 rounded-full">
+                                                                {message.faqData.difficulty}
+                                                            </span>
+                                                        </div>
+                                                        <h4 className="text-blue-100 font-medium text-base">
+                                                            {message.faqData.question}
+                                                        </h4>
+                                                    </div>
+                                                )}
                                                 <div className="text-lg leading-relaxed text-white">
                                                     {message.richContent.answer}
                                                 </div>
