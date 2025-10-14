@@ -1,33 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+
 import {
-  Search,
-  Plus,
-  FileText,
-  Send,
-  Bot,
-  Sparkles,
-  CheckSquare,
-  List,
-  Save,
-  Upload,
   Lock,
-  Settings,
-  Grid3X3,
-  User,
+  Menu,
   ChevronDown,
-  Filter,
-  Edit3,
   Brain,
   Video,
   Map,
   FileText as Report,
   Star,
-  HelpCircle,
-  Sparkles as SparkleIcon,
-  Menu
+  HelpCircle
 } from 'lucide-react';
-import SourcesPanel from './components/SourcesPanel';
+import UserMenu from './components/UserMenu';
+import LoginModal from './components/LoginModal';
+import ProfilePage from './components/ProfilePage';
+import { useAuth } from './context/AuthContext';
+
 import ConversationPanel from './components/ConversationPanel';
 import StudioPanel from './components/StudioPanel';
 import ResourceHubPanel from './components/ResourceHubPanel';
@@ -35,15 +24,19 @@ import CareerPathExplorer from './components/CareerPathExplorer';
 import MindmapPanel from './components/MindmapPanel';
 import ProgressDashboard from './components/ProgressDashboard';
 import AIArtifactPanel from './components/AIArtifactPanel';
-import APIStatus from './components/APIStatus';
+
+
 import SetupGuide from './components/SetupGuide';
 import HomePage from './components/HomePage';
 import ConversationHistorySidebar from './components/ConversationHistorySidebar';
-import { getConversations, createConversation, deleteConversation, updateConversation } from './api/conversationApi';
+import { getConversations, createConversation, deleteConversation } from './api/conversationApi';
 // LearningPathPage removed
 
 function App() {
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [showProfilePage, setShowProfilePage] = useState(false);
   const [sources, setSources] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [conversationsMeta, setConversationsMeta] = useState([]); // {id, title, createdAt}
@@ -51,10 +44,12 @@ function App() {
   const [activeSourceId, setActiveSourceId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [pendingAttachment, setPendingAttachment] = useState(null);
-  const [isSourcesOpen, setIsSourcesOpen] = useState(true);
   const [isStudioOpen, setIsStudioOpen] = useState(true);
-  const [showSetupGuide, setShowSetupGuide] = useState(false);
   const [activeRightTab, setActiveRightTab] = useState('studio'); // studio | resources | career | mindmap | artifacts | progress
+
+
+  const [showSetupGuide, setShowSetupGuide] = useState(false);
+
   const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'main'
 
   // Load sources from localStorage on mount
@@ -97,42 +92,13 @@ function App() {
     }
   }, [sources]);
 
-  const addSource = (source) => {
-    const newSource = {
-      id: Date.now().toString(),
-      title: source.title || 'Untitled Source',
-      content: source.content || '',
-      type: source.type || 'text',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    setSources(prev => [newSource, ...prev]);
-    setActiveSourceId(newSource.id);
 
-    // Clear conversations when adding new source
-    setConversations([]);
-  };
 
-  const updateSource = (id, updates) => {
-    setSources(prev => prev.map(source =>
-      source.id === id
-        ? { ...source, ...updates, updatedAt: new Date().toISOString() }
-        : source
-    ));
-  };
 
-  const deleteSource = (id) => {
-    setSources(prev => prev.filter(source => source.id !== id));
-    if (activeSourceId === id) {
-      const remainingSources = sources.filter(source => source.id !== id);
-      setActiveSourceId(remainingSources.length > 0 ? remainingSources[0].id : null);
-    }
-  };
 
-  const filteredSources = sources.filter(source =>
-    source.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    source.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+
+
+
 
   const activeSource = sources.find(source => source.id === activeSourceId);
 
@@ -215,6 +181,10 @@ function App() {
     }
   };
 
+  if (showProfilePage) {
+    return <ProfilePage onBack={() => setShowProfilePage(false)} />;
+  }
+
   return (
     <div className="h-screen bg-gray-900 flex flex-col">
       {currentPage === 'home' ? (
@@ -225,6 +195,7 @@ function App() {
           activeConversationId={activeConversationId}
           onSelectConversation={setActiveConversationId}
           onDeleteConversation={handleDeleteConversation}
+          onShowProfile={() => setShowProfilePage(true)}
         />
       ) : (
         <>
@@ -254,24 +225,30 @@ function App() {
               </div>
 
               <div className="flex items-center gap-4">
-                <APIStatus />
                 <button className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
                   <Lock className="w-4 h-4" />
                   <span className="text-sm">Chia sẻ</span>
                 </button>
-                <button
-                  onClick={() => setShowSetupGuide(true)}
-                  className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="text-sm">Cài đặt</span>
-                </button>
-                <button className="text-gray-300 hover:text-white transition-colors">
-                  <Grid3X3 className="w-5 h-5" />
-                </button>
-                <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                </div>
+                {isAuthLoading ? (
+                  <div className="w-8 h-8 bg-gray-600 rounded-full animate-pulse"></div>
+                ) : isAuthenticated ? (
+                  <UserMenu onShowProfile={() => setShowProfilePage(true)} />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsLoginModalOpen(true)}
+                      className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                    >
+                      Đăng nhập
+                    </button>
+                    <button
+                      onClick={() => setIsLoginModalOpen(true)}
+                      className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                    >
+                      Đăng ký
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -309,7 +286,6 @@ function App() {
                     />
                   </div>
                 </div>
-
                 {/* Right Panel - Studio */}
                 <AnimatePresence>
                   {isStudioOpen ? (
@@ -358,42 +334,42 @@ function App() {
                         <ChevronDown className="w-4 h-4 -rotate-90" />
                       </button>
                       <button
-                        onClick={() => setIsStudioOpen(true)}
+                        onClick={() => { setIsStudioOpen(true); setActiveRightTab('studio'); }}
                         className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center"
                         title="Tổng quan âm thanh"
                       >
                         <Brain className="w-4 h-4 text-white" />
                       </button>
                       <button
-                        onClick={() => setIsStudioOpen(true)}
+                        onClick={() => { setIsStudioOpen(true); setActiveRightTab('studio'); }}
                         className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center"
                         title="Tổng quan video"
                       >
                         <Video className="w-4 h-4 text-white" />
                       </button>
                       <button
-                        onClick={() => setIsStudioOpen(true)}
+                        onClick={() => { setIsStudioOpen(true); setActiveRightTab('mindmap'); }}
                         className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center"
                         title="Bản đồ tư duy"
                       >
                         <Map className="w-4 h-4 text-white" />
                       </button>
                       <button
-                        onClick={() => setIsStudioOpen(true)}
+                        onClick={() => { setIsStudioOpen(true); setActiveRightTab('artifacts'); }}
                         className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center"
                         title="Báo cáo"
                       >
                         <Report className="w-4 h-4 text-white" />
                       </button>
                       <button
-                        onClick={() => setIsStudioOpen(true)}
+                        onClick={() => { setIsStudioOpen(true); setActiveRightTab('progress'); }}
                         className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center"
                         title="Thẻ ghi nhớ"
                       >
                         <Star className="w-4 h-4 text-white" />
                       </button>
                       <button
-                        onClick={() => setIsStudioOpen(true)}
+                        onClick={() => { setIsStudioOpen(true); setActiveRightTab('progress'); }}
                         className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center"
                         title="Bài kiểm tra"
                       >
@@ -402,6 +378,8 @@ function App() {
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+
 
           </div>
 
@@ -419,6 +397,7 @@ function App() {
           />
         </>
       )}
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </div>
   );
 }

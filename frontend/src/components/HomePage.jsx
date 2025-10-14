@@ -4,6 +4,9 @@ import { Menu, Upload, X } from 'lucide-react';
 import FAQCard from './FAQCard';
 import { getFAQs } from '../api/faqApi';
 import ConversationHistorySidebar from './ConversationHistorySidebar';
+import UserMenu from './UserMenu';
+import LoginModal from './LoginModal';
+import { useAuth } from '../context/AuthContext';
 
 const HomePage = ({
   onNavigateToMain,
@@ -12,8 +15,11 @@ const HomePage = ({
   activeConversationId,
   onSelectConversation,
   onDeleteConversation,
+  onShowProfile,
 }) => {
+    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [pendingAttachment, setPendingAttachment] = useState(null);
     const [faqs, setFaqs] = useState([]);
@@ -97,9 +103,26 @@ const HomePage = ({
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                        <span className="text-gray-200 text-sm">U</span>
+                  {isAuthLoading ? (
+                    <div className="w-8 h-8 bg-gray-600 rounded-full animate-pulse"></div>
+                  ) : isAuthenticated ? (
+                    <UserMenu onShowProfile={onShowProfile} />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsLoginModalOpen(true)}
+                        className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                      >
+                        Đăng nhập
+                      </button>
+                      <button
+                        onClick={() => setIsLoginModalOpen(true)}
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                      >
+                        Đăng ký
+                      </button>
                     </div>
+                  )}
                 </div>
             </header>
 
@@ -164,7 +187,7 @@ const HomePage = ({
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl font-bold text-white mb-6">
-                            Câu Hỏi Thường Gặp
+                            Khám Phá
                         </h2>
                         {/* <p className="text-gray-300 text-xl leading-relaxed">
                             Nhận câu trả lời ngay lập tức về lộ trình học lập trình và công nghệ kỹ thuật phần mềm
@@ -224,6 +247,7 @@ const HomePage = ({
                 onDeleteConversation={onDeleteConversation}
                 onStartNewConversation={handleStartNewConversation}
             />
+            <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
         </div>
     );
 };
