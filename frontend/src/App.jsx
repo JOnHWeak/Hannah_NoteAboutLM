@@ -24,7 +24,8 @@ import {
   FileText as Report,
   Star,
   HelpCircle,
-  Sparkles as SparkleIcon
+  Sparkles as SparkleIcon,
+  Menu
 } from 'lucide-react';
 import SourcesPanel from './components/SourcesPanel';
 import ConversationPanel from './components/ConversationPanel';
@@ -37,9 +38,12 @@ import AIArtifactPanel from './components/AIArtifactPanel';
 import APIStatus from './components/APIStatus';
 import SetupGuide from './components/SetupGuide';
 import HomePage from './components/HomePage';
+import ConversationHistorySidebar from './components/ConversationHistorySidebar';
+import { getConversations, createConversation, deleteConversation, updateConversation } from './api/conversationApi';
 // LearningPathPage removed
 
 function App() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sources, setSources] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [conversationsMeta, setConversationsMeta] = useState([]); // {id, title, createdAt}
@@ -65,20 +69,25 @@ function App() {
     }
   }, []);
 
-  // Load conversations metadata on mount
+  // Load conversations metadata on mount using API
   useEffect(() => {
-    const savedConvs = localStorage.getItem('notebook-conversations');
-    if (savedConvs) {
+    const loadConversations = async () => {
       try {
-        const parsed = JSON.parse(savedConvs);
-        setConversationsMeta(parsed);
-        if (parsed.length > 0 && !activeConversationId) {
-          setActiveConversationId(parsed[0].id);
+        const response = await getConversations();
+        if (response.success) {
+          setConversationsMeta(response.data);
+          if (response.data.length > 0 && !activeConversationId) {
+            setActiveConversationId(response.data[0].id);
+          }
+        } else {
+          console.warn('Failed to load conversations:', response.message);
         }
-      } catch (e) {
-        console.warn('Failed to parse conversations from storage');
+      } catch (error) {
+        console.error('Error loading conversations:', error);
       }
-    }
+    };
+
+    loadConversations();
   }, []);
 
   // Save sources to localStorage whenever sources change
@@ -127,24 +136,30 @@ function App() {
 
   const activeSource = sources.find(source => source.id === activeSourceId);
 
-  const handleNavigateToMain = (searchQuery = '', attachment = null) => {
+  const handleNavigateToMain = async (searchQuery = '', attachment = null) => {
     setCurrentPage('main');
     if (searchQuery) {
       setSearchQuery(searchQuery);
     }
     if (attachment) {
       setPendingAttachment(attachment);
-      // Create a new conversation thread named after the file
-      const newConvId = Date.now().toString();
-      const newMeta = {
-        id: newConvId,
-        title: attachment.name,
-        createdAt: new Date().toISOString(),
-      };
-      setConversationsMeta((prev) => [newMeta, ...prev]);
-      setActiveConversationId(newConvId);
-      // Start with an empty message list; ConversationPanel will auto-send
-      setConversations([]);
+      // Create a new conversation thread named after the file using API
+      try {
+        const response = await createConversation({
+          title: attachment.name
+        });
+
+        if (response.success) {
+          setConversationsMeta((prev) => [response.data, ...prev]);
+          setActiveConversationId(response.data.id);
+          // Start with an empty message list; ConversationPanel will auto-send
+          setConversations([]);
+        } else {
+          console.error('Failed to create conversation for attachment:', response.message);
+        }
+      } catch (error) {
+        console.error('Error creating conversation for attachment:', error);
+      }
     }
   };
 
@@ -156,45 +171,76 @@ function App() {
     localStorage.setItem('notebook-conversations', JSON.stringify(conversationsMeta));
   }, [conversationsMeta]);
 
-  const handleDeleteConversation = (conversationId) => {
-    setConversationsMeta((prev) => {
-      const next = prev.filter((c) => c.id !== conversationId);
-      // If deleting the active conversation, switch to the next available or clear
-      setActiveConversationId((currentActive) => {
-        if (currentActive !== conversationId) return currentActive;
-        return next.length > 0 ? next[0].id : null;
-      });
-      // If the deleted conversation was active, clear current message list
-      setConversations((msgs) => {
-        return activeConversationId === conversationId ? [] : msgs;
-      });
-      return next;
-    });
+  const handleDeleteConversation = async (conversationId) => {
+    try {
+      const response = await deleteConversation(conversationId);
+      if (response.success) {
+        setConversationsMeta((prev) => {
+          const next = prev.filter((c) => c.id !== conversationId);
+          // If deleting the active conversation, switch to the next available or clear
+          setActiveConversationId((currentActive) => {
+            if (currentActive !== conversationId) return currentActive;
+            return next.length > 0 ? next[0].id : null;
+          });
+          // If the deleted conversation was active, clear current message list
+          setConversations((msgs) => {
+            return activeConversationId === conversationId ? [] : msgs;
+          });
+          return next;
+        });
+      } else {
+        console.error('Failed to delete conversation:', response.message);
+      }
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+    }
   };
 
-  const handleStartBlankConversation = () => {
-    const newConvId = Date.now().toString();
-    const newMeta = {
-      id: newConvId,
-      title: 'Cuộc trò chuyện mới',
-      createdAt: new Date().toISOString(),
-    };
-    setConversationsMeta((prev) => [newMeta, ...prev]);
-    setActiveConversationId(newConvId);
-    setConversations([]);
-    setCurrentPage('main');
+  const handleStartBlankConversation = async () => {
+    try {
+      const response = await createConversation({
+        title: 'Cuộc trò chuyện mới'
+      });
+
+      if (response.success) {
+        setConversationsMeta((prev) => [response.data, ...prev]);
+        setActiveConversationId(response.data.id);
+        setConversations([]);
+        setCurrentPage('main');
+      } else {
+        console.error('Failed to create conversation:', response.message);
+      }
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+    }
   };
 
   return (
     <div className="h-screen bg-gray-900 flex flex-col">
       {currentPage === 'home' ? (
-        <HomePage onNavigateToMain={handleNavigateToMain} onStartBlankConversation={handleStartBlankConversation} />
+        <HomePage
+          onNavigateToMain={handleNavigateToMain}
+          onStartBlankConversation={handleStartBlankConversation}
+          conversationsMeta={conversationsMeta}
+          activeConversationId={activeConversationId}
+          onSelectConversation={setActiveConversationId}
+          onDeleteConversation={handleDeleteConversation}
+        />
       ) : (
         <>
-          {/* Header */}
-          <div className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+          {/* Header - Unified Design */}
+          <div className="sticky top-0 z-50 bg-gray-800/95 backdrop-blur-sm border-b border-gray-700 px-6 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
+                {/* Hamburger Menu for Conversation Sidebar */}
+                <button
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                  title="Toggle conversation history"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
+
                 <button
                   onClick={() => setCurrentPage('home')}
                   className="flex items-center gap-2 group"
@@ -231,78 +277,20 @@ function App() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 flex">
-            {
-              <>
-                {/* Left Panel - Sources */}
-                <AnimatePresence>
-                  {isSourcesOpen ? (
-                    <motion.div
-                      initial={{ x: -300 }}
-                      animate={{ x: 0 }}
-                      exit={{ x: -300 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      className="w-80 bg-gray-800 border-r border-gray-700 flex flex-col"
-                    >
-                      <SourcesPanel
-                        sources={filteredSources}
-                        activeSourceId={activeSourceId}
-                        onSelectSource={setActiveSourceId}
-                        onDeleteSource={deleteSource}
-                        onAddSource={addSource}
-                        searchQuery={searchQuery}
-                        onSearchChange={setSearchQuery}
-                        onTogglePanel={() => setIsSourcesOpen(false)}
-                        onNavigateToSubjects={() => setCurrentPage('subjects')}
-                        conversationsMeta={conversationsMeta}
-                        activeConversationId={activeConversationId}
-                        onSelectConversation={setActiveConversationId}
-                        onDeleteConversation={handleDeleteConversation}
-                      />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      initial={{ x: -80, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      exit={{ x: -80, opacity: 0 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      className="w-16 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-3 gap-4"
-                    >
-                      <button
-                        onClick={() => setIsSourcesOpen(true)}
-                        className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white"
-                        title="Mở Nguồn"
-                      >
-                        <ChevronDown className="w-4 h-4 rotate-90" />
-                      </button>
-                      <button
-                        onClick={() => addSource({ title: 'Nguồn mới', content: '', type: 'text' })}
-                        className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center"
-                        title="Thêm nguồn"
-                      >
-                        <Plus className="w-4 h-4 text-white" />
-                      </button>
-                      <label
-                        className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center cursor-pointer"
-                        title="Tải lên"
-                      >
-                        <Upload className="w-4 h-4 text-white" />
-                        <input type="file" className="hidden" onChange={(e) => {
-                          const file = e.target.files && e.target.files[0];
-                          if (!file) return;
-                          const reader = new FileReader();
-                          reader.onload = (ev) => {
-                            addSource({ title: file.name, content: ev.target.result || '', type: file.type.includes('image') ? 'image' : 'file' });
-                          };
-                          reader.readAsText(file);
-                        }} />
-                      </label>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+          <div className="flex-1 flex relative">
+            {/* Conversation History Sidebar */}
+            <ConversationHistorySidebar
+              isOpen={isSidebarOpen}
+              onClose={() => setIsSidebarOpen(false)}
+              conversations={conversationsMeta}
+              activeConversationId={activeConversationId}
+              onSelectConversation={setActiveConversationId}
+              onDeleteConversation={handleDeleteConversation}
+              onStartNewConversation={handleStartBlankConversation}
+            />
 
-                {/* Center Panel - Conversation */}
-                <div className="flex-1 flex flex-col bg-gray-900">
+            {/* Center Panel - Conversation */}
+            <div className="flex-1 flex flex-col bg-gray-900">
                   <div className="flex-1 flex flex-col">
                     <ConversationPanel
                       source={activeSource}
@@ -313,6 +301,11 @@ function App() {
                       autoSend={true}
                       pendingAttachment={pendingAttachment}
                       onConsumeAttachment={() => setPendingAttachment(null)}
+                      conversationsMeta={conversationsMeta}
+                      activeConversationId={activeConversationId}
+                      onSelectConversation={setActiveConversationId}
+                      onDeleteConversation={handleDeleteConversation}
+                      onStartBlankConversation={handleStartBlankConversation}
                     />
                   </div>
                 </div>
@@ -410,10 +403,6 @@ function App() {
                   )}
                 </AnimatePresence>
 
-                {/* Studio compact rail replaces floating toggle when collapsed */}
-                {/* Sources compact rail replaces floating toggle when collapsed */}
-              </>
-            }
           </div>
 
           {/* Footer */}

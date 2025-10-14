@@ -8,9 +8,12 @@
   }
 
   body {
-    @apply bg-gray-900 text-white;
+    background-color: #0a0a0f;
+    background-image: radial-gradient(ellipse at center, #0a0a0f 0%, #1a1a2e 70%, #0f1419 100%);
+    @apply text-white;
   }
 }
+
 
 @layer components {
   .notebook-button {

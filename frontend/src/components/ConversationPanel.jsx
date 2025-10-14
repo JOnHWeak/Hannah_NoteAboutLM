@@ -18,11 +18,22 @@ import {
     Settings,
     X,
     Search,
-    Sparkles
+    Sparkles,
+    Menu
 } from 'lucide-react';
 import { getFAQById, searchFAQs } from '../api/faqApi';
+import ConversationHistorySidebar from './ConversationHistorySidebar';
 
-const ConversationPanel = ({ source, conversations, onUpdateConversations, searchQuery, onSearchChange, autoSend = false, pendingAttachment = null, onConsumeAttachment }) => {
+const ConversationPanel = ({
+    source,
+    conversations,
+    onUpdateConversations,
+    searchQuery,
+    onSearchChange,
+    autoSend = false,
+    pendingAttachment = null,
+    onConsumeAttachment,
+}) => {
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
@@ -285,6 +296,8 @@ const ConversationPanel = ({ source, conversations, onUpdateConversations, searc
             console.log('File uploaded:', file.name);
         }
     };
+
+
 
     if (!source && conversations.length === 0) {
         return (
@@ -871,6 +884,8 @@ const ConversationPanel = ({ source, conversations, onUpdateConversations, searc
                     </motion.div>
                 )}
             </AnimatePresence>
+
+
         </div>
     );
 };

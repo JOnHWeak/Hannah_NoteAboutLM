@@ -3,8 +3,17 @@ import { motion } from 'framer-motion';
 import { Menu, Upload, X } from 'lucide-react';
 import FAQCard from './FAQCard';
 import { getFAQs } from '../api/faqApi';
+import ConversationHistorySidebar from './ConversationHistorySidebar';
 
-const HomePage = ({ onNavigateToMain, onStartBlankConversation }) => {
+const HomePage = ({
+  onNavigateToMain,
+  onStartBlankConversation,
+  conversationsMeta,
+  activeConversationId,
+  onSelectConversation,
+  onDeleteConversation,
+}) => {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [pendingAttachment, setPendingAttachment] = useState(null);
     const [faqs, setFaqs] = useState([]);
@@ -55,15 +64,29 @@ const HomePage = ({ onNavigateToMain, onStartBlankConversation }) => {
         onNavigateToMain(faq.question, null);
     };
 
+    // Handle conversation selection from sidebar
+    const handleSelectConversation = (conversationId) => {
+        onSelectConversation(conversationId);
+        onNavigateToMain('', null); // Navigate to main with selected conversation
+    };
+
+    // Handle starting new conversation from sidebar
+    const handleStartNewConversation = () => {
+        onStartBlankConversation();
+    };
+
 
 
 
     return (
-        <div className="min-h-screen bg-gray-900 scroll-smooth">
+        <div className="min-h-screen scroll-smooth">
             {/* Header */}
             <header className="sticky top-0 z-50 flex items-center justify-between p-6 bg-gray-800/95 backdrop-blur-sm border-b border-gray-700">
                 <div className="flex items-center gap-4">
-                    <button className="text-gray-300 hover:text-white transition-colors">
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="text-gray-300 hover:text-white transition-colors"
+                    >
                         <Menu className="w-6 h-6" />
                     </button>
                     <div className="flex items-center gap-2">
@@ -81,10 +104,10 @@ const HomePage = ({ onNavigateToMain, onStartBlankConversation }) => {
             </header>
 
             {/* Hero Section */}
-            <section className="py-16 px-6 bg-gray-900">
+            <section className="py-16 px-6">
                 <div className="max-w-4xl mx-auto text-center">
                     <h1 className="text-6xl font-light text-white mb-8">
-                        What would you like to learn about?
+                        Bạn muốn tìm hiểu về điều gì?
                     </h1>
 
                     {/* Search Input */}
@@ -95,14 +118,14 @@ const HomePage = ({ onNavigateToMain, onStartBlankConversation }) => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                placeholder="Ask Hannah Learn About"
+                                placeholder="Hỏi Hannah Learn About"
                                 className="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
                             />
                             {pendingAttachment && (
                                 <div className="ml-3 flex items-center gap-2 bg-gray-700 rounded-full px-3 py-1 max-w-[50%]">
                                     <div className="w-5 h-5 rounded bg-red-500 text-white text-[10px] flex items-center justify-center">PDF</div>
                                     <span className="text-xs text-gray-200 truncate">{pendingAttachment.name}</span>
-                                    <button onClick={() => setPendingAttachment(null)} className="p-1 text-gray-400 hover:text-gray-200" title="Remove file">
+                                    <button onClick={() => setPendingAttachment(null)} className="p-1 text-gray-400 hover:text-gray-200" title="Xóa tệp">
                                         <X className="w-3 h-3" />
                                     </button>
                                 </div>
@@ -110,7 +133,7 @@ const HomePage = ({ onNavigateToMain, onStartBlankConversation }) => {
                             <button
                                 onClick={() => fileInputRef.current?.click()}
                                 className="ml-2 p-2 text-gray-400 hover:text-gray-200 transition-colors"
-                                title="Upload file"
+                                title="Tải lên tệp"
                             >
                                 <Upload className="w-5 h-5" />
                             </button>
@@ -130,22 +153,22 @@ const HomePage = ({ onNavigateToMain, onStartBlankConversation }) => {
                             onClick={onStartBlankConversation}
                             className="inline-flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                         >
-                            Start conversation
+                            Bắt đầu cuộc trò chuyện
                         </button>
                     </div>
                 </div>
             </section>
 
             {/* FAQ Cards Section - Pinterest-Style Masonry Grid */}
-            <section className="px-6 py-16 bg-gray-900">
+            <section className="px-6 py-16">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl font-bold text-white mb-6">
-                            Frequently Asked Questions
+                            Câu Hỏi Thường Gặp
                         </h2>
-                        <p className="text-gray-300 text-xl leading-relaxed">
-                            Get instant answers about programming learning roadmaps and software engineering technologies
-                        </p>
+                        {/* <p className="text-gray-300 text-xl leading-relaxed">
+                            Nhận câu trả lời ngay lập tức về lộ trình học lập trình và công nghệ kỹ thuật phần mềm
+                        </p> */}
                     </div>
 
                     {isLoadingFAQs ? (
@@ -191,7 +214,16 @@ const HomePage = ({ onNavigateToMain, onStartBlankConversation }) => {
                 </div>
             </section>
 
-
+            {/* Conversation History Sidebar */}
+            <ConversationHistorySidebar
+                isOpen={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
+                conversations={conversationsMeta || []}
+                activeConversationId={activeConversationId}
+                onSelectConversation={handleSelectConversation}
+                onDeleteConversation={onDeleteConversation}
+                onStartNewConversation={handleStartNewConversation}
+            />
         </div>
     );
 };
