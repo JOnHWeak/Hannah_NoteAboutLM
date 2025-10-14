@@ -17,7 +17,7 @@ const HomePage = ({
   onDeleteConversation,
   onShowProfile,
 }) => {
-    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+    const { isAuthenticated, user, isLoading: isAuthLoading } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -148,7 +148,7 @@ const HomePage = ({
             <section className="py-16 px-6">
                 <div className="max-w-4xl mx-auto text-center">
                     <h1 className="text-6xl font-light text-white mb-8">
-                        Bạn muốn tìm hiểu về điều gì?
+                        {isAuthenticated && user ? `Chào ${user.name}, bạn muốn tìm hiểu về điều gì?` : 'Bạn muốn tìm hiểu về điều gì?'}
                     </h1>
 
                     {/* Search Input */}

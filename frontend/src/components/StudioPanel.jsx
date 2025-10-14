@@ -170,13 +170,8 @@ const StudioPanel = ({ source, onTogglePanel }) => {
             <Sparkles className="w-4 h-4 text-blue-400" />
           </div>
           <p className="text-sm text-gray-300 mb-4">
-            Đầu ra của Studio sẽ được lưu ở đây. Sau khi thêm nguồn, hãy nhấp để thêm Tổng quan bằng âm thanh,
-            Hướng dẫn học tập, Bản đồ tư duy và nhiều thông tin khác!
+            Đầu ra của Studio sẽ được lưu ở đây.
           </p>
-          <button className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 mx-auto">
-            <CheckCircle className="w-4 h-4" />
-            Thêm ghi chú
-          </button>
         </div>
       </div>
 

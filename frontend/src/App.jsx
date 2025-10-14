@@ -5,7 +5,7 @@ import {
   Lock,
   Menu,
   ChevronDown,
-  Brain,
+
   Video,
   Map,
   FileText as Report,
@@ -181,6 +181,7 @@ function App() {
         setConversationsMeta((prev) => [response.data, ...prev]);
         setActiveConversationId(response.data.id);
         setConversations([]);
+        setActiveSourceId(null); // Xóa ngữ cảnh tài liệu
         setCurrentPage('main');
       } else {
         console.error('Failed to create conversation:', response.message);
@@ -189,6 +190,14 @@ function App() {
       console.error('Error creating conversation:', error);
     }
   };
+  const handleUpdateConversationTitle = (conversationId, newTitle) => {
+    setConversationsMeta(prev =>
+      prev.map(conv =>
+        conv.id === conversationId ? { ...conv, title: newTitle } : conv
+      )
+    );
+  };
+
 
   if (showProfilePage) {
     return <ProfilePage onBack={() => setShowProfilePage(false)} />;
@@ -292,6 +301,8 @@ function App() {
                       onSelectConversation={setActiveConversationId}
                       onDeleteConversation={handleDeleteConversation}
                       onStartBlankConversation={handleStartBlankConversation}
+                      currentConversation={conversationsMeta.find(c => c.id === activeConversationId)}
+                      onUpdateConversationTitle={handleUpdateConversationTitle}
                     />
                   </div>
                 </div>
@@ -342,13 +353,7 @@ function App() {
                       >
                         <ChevronDown className="w-4 h-4 -rotate-90" />
                       </button>
-                      <button
-                        onClick={() => { setIsStudioOpen(true); setActiveRightTab('studio'); }}
-                        className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center"
-                        title="Tổng quan âm thanh"
-                      >
-                        <Brain className="w-4 h-4 text-white" />
-                      </button>
+
                       <button
                         onClick={() => { setIsStudioOpen(true); setActiveRightTab('studio'); }}
                         className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center"
@@ -366,7 +371,7 @@ function App() {
                       <button
                         onClick={() => { setIsStudioOpen(true); setActiveRightTab('artifacts'); }}
                         className="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-600 flex items-center justify-center"
-                        title="Báo cáo"
+                        title="Tổng hợp nội dung"
                       >
                         <Report className="w-4 h-4 text-white" />
                       </button>
@@ -395,7 +400,7 @@ function App() {
           {/* Footer */}
           <div className="bg-gray-800 border-t border-gray-700 px-6 py-2">
             <p className="text-xs text-gray-400">
-              NotebookLM có thể đưa ra thông tin không chính xác; hãy kiểm tra kỹ câu trả lời mà bạn nhận được.
+              Hannah Learn About có thể đưa ra thông tin không chính xác; hãy kiểm tra kỹ câu trả lời mà bạn nhận được.
             </p>
           </div>
 

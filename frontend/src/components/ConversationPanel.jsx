@@ -22,6 +22,7 @@ import {
     Menu
 } from 'lucide-react';
 import { getFAQById, searchFAQs } from '../api/faqApi';
+import { updateConversation } from '../api/conversationApi';
 import ConversationHistorySidebar from './ConversationHistorySidebar';
 
 const ConversationPanel = ({
@@ -33,6 +34,8 @@ const ConversationPanel = ({
     autoSend = false,
     pendingAttachment = null,
     onConsumeAttachment,
+    currentConversation = null,
+    onUpdateConversationTitle = null,
 }) => {
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -101,6 +104,21 @@ const ConversationPanel = ({
         onUpdateConversations(newConversations);
         setInputMessage('');
         setIsLoading(true);
+
+        // Tự động cập nhật tiêu đề nếu đây là tin nhắn đầu tiên trong cuộc trò chuyện mới
+        if (currentConversation && currentConversation.title === 'Cuộc trò chuyện mới' && conversations.length === 0) {
+            try {
+                const updateResult = await updateConversation(currentConversation.id, {
+                    title: messageContent.trim()
+                });
+
+                if (updateResult.success && onUpdateConversationTitle) {
+                    onUpdateConversationTitle(currentConversation.id, messageContent.trim());
+                }
+            } catch (error) {
+                console.error('Failed to update conversation title:', error);
+            }
+        }
 
         // Simulate AI response with rich content
         setTimeout(async () => {
@@ -198,7 +216,7 @@ const ConversationPanel = ({
         };
     };
 
-    const generateFAQResponse = (faq, originalQuestion) => {
+    const generateFAQResponse = (faq) => {
         const programmingImages = {
             'Programming Fundamentals': 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=500&h=300&fit=crop',
             'Learning Roadmap': 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&h=300&fit=crop',
@@ -336,7 +354,7 @@ const ConversationPanel = ({
                             className="flex-1 notebook-input"
                             value={inputMessage}
                             onChange={(e) => setInputMessage(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                         />
                         <button
                             onClick={() => fileInputRef.current?.click()}
@@ -390,10 +408,8 @@ const ConversationPanel = ({
                 {conversations.length === 0 ? (
                     <div className="text-center py-8">
                         <Bot className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                        <h3 className="text-lg font-medium text-white mb-2">Bắt đầu cuộc trò chuyện với AI</h3>
-                        <p className="text-gray-400 mb-4">
-                            Đặt câu hỏi về nguồn của bạn hoặc sử dụng các công cụ Studio
-                        </p>
+                        <h3 className="text-lg font-medium text-white mb-2">Bắt đầu cuộc trò chuyện với Hannah</h3>
+                       
                     </div>
                 ) : (
                     conversations.map((message) => (
@@ -627,7 +643,7 @@ const ConversationPanel = ({
                         type="text"
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                         placeholder={"Nhập câu hỏi của bạn..."}
                         className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
