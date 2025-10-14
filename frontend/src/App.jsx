@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import {
@@ -51,6 +51,15 @@ function App() {
   const [showSetupGuide, setShowSetupGuide] = useState(false);
 
   const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'main'
+
+  // Effect to handle logout redirection
+  const prevIsAuthenticated = useRef(isAuthenticated);
+  useEffect(() => {
+    if (prevIsAuthenticated.current && !isAuthenticated) {
+      setCurrentPage('home');
+    }
+    prevIsAuthenticated.current = isAuthenticated;
+  }, [isAuthenticated]);
 
   // Load sources from localStorage on mount
   useEffect(() => {

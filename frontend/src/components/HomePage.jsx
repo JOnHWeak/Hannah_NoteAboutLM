@@ -26,23 +26,35 @@ const HomePage = ({
     const [isLoadingFAQs, setIsLoadingFAQs] = useState(true);
     const fileInputRef = useRef(null);
 
-    const handleSearch = () => {
-        const query = searchQuery.trim() ? searchQuery : '';
-        // Navigate to main app; include pendingAttachment if any
-        onNavigateToMain(query, pendingAttachment);
-        // Clear local attachment after navigating
-        setPendingAttachment(null);
+    // Helper function to check authentication before actions
+    const requireAuth = (callback) => {
+        if (!isAuthenticated) {
+            setIsLoginModalOpen(true);
+            return false;
+        }
+        callback();
+        return true;
     };
 
-
+    const handleSearch = () => {
+        requireAuth(() => {
+            const query = searchQuery.trim() ? searchQuery : '';
+            // Navigate to main app; include pendingAttachment if any
+            onNavigateToMain(query, pendingAttachment);
+            // Clear local attachment after navigating
+            setPendingAttachment(null);
+        });
+    };
 
     const handleFileUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const attachment = { name: file.name, type: file.type || 'file', size: file.size };
-            // Only store attachment; allow user to continue typing before sending
-            setPendingAttachment(attachment);
-        }
+        requireAuth(() => {
+            const file = event.target.files[0];
+            if (file) {
+                const attachment = { name: file.name, type: file.type || 'file', size: file.size };
+                // Only store attachment; allow user to continue typing before sending
+                setPendingAttachment(attachment);
+            }
+        });
     };
 
     // Load FAQ data on component mount
@@ -66,19 +78,25 @@ const HomePage = ({
 
     // Handle FAQ card click - navigate to main app with the question
     const handleFAQClick = (faq) => {
-        // Navigate to main app with the FAQ question
-        onNavigateToMain(faq.question, null);
+        requireAuth(() => {
+            // Navigate to main app with the FAQ question
+            onNavigateToMain(faq.question, null);
+        });
     };
 
     // Handle conversation selection from sidebar
     const handleSelectConversation = (conversationId) => {
-        onSelectConversation(conversationId);
-        onNavigateToMain('', null); // Navigate to main with selected conversation
+        requireAuth(() => {
+            onSelectConversation(conversationId);
+            onNavigateToMain('', null); // Navigate to main with selected conversation
+        });
     };
 
     // Handle starting new conversation from sidebar
     const handleStartNewConversation = () => {
-        onStartBlankConversation();
+        requireAuth(() => {
+            onStartBlankConversation();
+        });
     };
 
 
@@ -173,7 +191,7 @@ const HomePage = ({
                     {/* Quick start button */}
                     <div className="text-center">
                         <button
-                            onClick={onStartBlankConversation}
+                            onClick={handleStartNewConversation}
                             className="inline-flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                         >
                             Bắt đầu cuộc trò chuyện
