@@ -45,6 +45,11 @@ export const AuthProvider = ({ children }) => {
     setUser(prevUser => ({ ...prevUser, ...updatedUserData }));
   };
 
+  const resetPassword = async (email) => {
+    const { success, message } = await authApi.resetPassword({ email });
+    return { success, message };
+  };
+
   const value = {
     user,
     isAuthenticated: !!user,
@@ -53,6 +58,7 @@ export const AuthProvider = ({ children }) => {
     signup,
     logout,
     updateUser,
+    resetPassword,
   };
 
   return (

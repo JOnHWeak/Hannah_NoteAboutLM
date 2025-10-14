@@ -19,7 +19,7 @@ const HomePage = ({
 }) => {
     const { isAuthenticated, user, isLoading: isAuthLoading } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [modalView, setModalView] = useState(null); // null, 'login', 'signup'
     const [searchQuery, setSearchQuery] = useState('');
     const [pendingAttachment, setPendingAttachment] = useState(null);
     const [faqs, setFaqs] = useState([]);
@@ -29,7 +29,7 @@ const HomePage = ({
     // Helper function to check authentication before actions
     const requireAuth = (callback) => {
         if (!isAuthenticated) {
-            setIsLoginModalOpen(true);
+            setModalView('login'); // Mặc định mở form đăng nhập khi yêu cầu xác thực
             return false;
         }
         callback();
@@ -128,13 +128,13 @@ const HomePage = ({
                   ) : (
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => setIsLoginModalOpen(true)}
+                        onClick={() => setModalView('login')}
                         className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
                       >
                         Đăng nhập
                       </button>
                       <button
-                        onClick={() => setIsLoginModalOpen(true)}
+                        onClick={() => setModalView('signup')}
                         className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
                       >
                         Đăng ký
@@ -265,7 +265,7 @@ const HomePage = ({
                 onDeleteConversation={onDeleteConversation}
                 onStartNewConversation={handleStartNewConversation}
             />
-            <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+            <LoginModal isOpen={!!modalView} initialView={modalView} onClose={() => setModalView(null)} />
         </div>
     );
 };

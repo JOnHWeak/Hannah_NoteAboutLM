@@ -78,4 +78,30 @@ export const authApi = {
 
     return { success: true, data: sessionData };
   },
+
+  resetPassword: async ({ email }) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Check if user exists
+    const existingUser = mockUsers.find(user => user.email === email);
+    if (!existingUser) {
+      return {
+        success: false,
+        message: 'Email không tồn tại trong hệ thống.'
+      };
+    }
+
+    // In a real application, you would send an email with a reset link
+    // For demo purposes, we'll just generate a new password and update it
+    const newPassword = 'newpassword123';
+    existingUser.password = newPassword;
+
+    console.log(`Mật khẩu mới cho ${email}: ${newPassword}`);
+
+    return {
+      success: true,
+      message: `Mật khẩu mới đã được tạo: ${newPassword}. Trong ứng dụng thực tế, thông tin này sẽ được gửi qua email.`
+    };
+  },
 };
