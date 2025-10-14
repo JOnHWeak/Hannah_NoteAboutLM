@@ -19,9 +19,10 @@ import {
     X,
     Search,
     Sparkles,
-    Menu
+    Menu,
+    File
 } from 'lucide-react';
-import { getFAQById, searchFAQs } from '../api/faqApi';
+import { searchFAQs } from '../api/faqApi';
 import { updateConversation } from '../api/conversationApi';
 import ConversationHistorySidebar from './ConversationHistorySidebar';
 
@@ -46,6 +47,7 @@ const ConversationPanel = ({
     const [chatStyle, setChatStyle] = useState('default');
     const [answerLength, setAnswerLength] = useState('default');
     const [hasAutoSent, setHasAutoSent] = useState(false);
+    const [attachment, setAttachment] = useState(null);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
 
@@ -78,12 +80,20 @@ const ConversationPanel = ({
             }
         }
     }, [searchQuery, pendingAttachment, onSearchChange, autoSend, hasAutoSent]);
+    // Sync pendingAttachment from props to local state
+    useEffect(() => {
+        if (pendingAttachment) {
+            setAttachment(pendingAttachment);
+        }
+    }, [pendingAttachment]);
+
 
     const handleSendMessage = async () => {
-        if (!inputMessage.trim()) {
+        if (!inputMessage.trim() && !attachment) {
             return;
         }
-        handleSendMessageWithContent(inputMessage);
+        handleSendAttachmentAware(inputMessage, attachment);
+        setAttachment(null); // Xóa tệp đính kèm sau khi gửi
     };
 
     const handleSendMessageWithContent = async (messageContent) => {
@@ -131,7 +141,19 @@ const ConversationPanel = ({
     };
 
     // Send message that may include an attachment metadata
-    const handleSendAttachmentAware = (messageContent, attachment) => {
+    const handleSendAttachmentAware = async (messageContent, attachment) => {
+        // Auto-update title with filename on first message with attachment in a new convo
+        if (attachment && currentConversation && currentConversation.title === 'Cuộc trò chuyện mới' && conversations.length === 0) {
+            try {
+                const updateResult = await updateConversation(currentConversation.id, { title: attachment.name });
+                if (updateResult.success && onUpdateConversationTitle) {
+                    onUpdateConversationTitle(currentConversation.id, attachment.name);
+                }
+            } catch (error) {
+                console.error('Failed to auto-update conversation title with attachment name:', error);
+            }
+        }
+
         const parts = [];
         if (attachment?.name) {
             parts.push(`[Tệp đính kèm] ${attachment.name}`);
@@ -310,8 +332,8 @@ const ConversationPanel = ({
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
         if (file) {
-            // Handle file upload logic here
-            console.log('File uploaded:', file.name);
+            const newAttachment = { name: file.name, type: file.type, size: file.size };
+            setAttachment(newAttachment);
         }
     };
 
@@ -323,7 +345,7 @@ const ConversationPanel = ({
                 {/* Header */}
                 <div className="p-4 border-b border-gray-700">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-white">Cuộc trò chuyện</h2>
+                        <h2 className="text-lg font-semibold text-white">{currentConversation ? currentConversation.title : 'Cuộc trò chuyện'}</h2>
                         <button
                             onClick={() => setShowSettings(true)}
                             className="text-gray-400 hover:text-white"
@@ -337,7 +359,7 @@ const ConversationPanel = ({
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                         <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                        <h3 className="text-xl font-medium text-white mb-2">Chào mừng đến với AI Chat</h3>
+                        <h3 className="text-xl font-medium text-white mb-2">Chào mừng đến với Hannah</h3>
                         <p className="text-gray-400 mb-4">
                             Hãy cùng khám phá và bắt đầu đặt câu hỏi!
                         </p>
@@ -347,32 +369,49 @@ const ConversationPanel = ({
 
                 {/* Input Area */}
                 <div className="p-4 border-t border-gray-700">
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="text"
-                            placeholder="Nhập câu hỏi để bắt đầu"
-                            className="flex-1 notebook-input"
-                            value={inputMessage}
-                            onChange={(e) => setInputMessage(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                        />
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-                            title="Tải file lên"
-                        >
-                            <Paperclip className="w-4 h-4" />
-                        </button>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".pdf,.doc,.docx,.txt"
-                            onChange={handleFileUpload}
-                            className="hidden"
-                        />
-                        <button onClick={handleSendMessage} disabled={!inputMessage.trim() || isLoading} className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white p-2 rounded-full transition-colors duration-200">
-                            <Send className="w-4 h-4" />
-                        </button>
+                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-2">
+                        {attachment && (
+                            <div className="mb-2">
+                                <div className="inline-flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2">
+                                    <File className="w-4 h-4 text-gray-400" />
+                                    <span className="text-sm text-white">{attachment.name}</span>
+                                    <button onClick={() => setAttachment(null)} className="p-1 text-gray-400 hover:text-white">
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={inputMessage}
+                                onChange={(e) => setInputMessage(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                placeholder={"Nhập câu hỏi của bạn..."}
+                                className="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none"
+                            />
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                                title="Tải file lên"
+                            >
+                                <Paperclip className="w-4 h-4" />
+                            </button>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".pdf,.doc,.docx,.txt"
+                                onChange={handleFileUpload}
+                                className="hidden"
+                            />
+                            <button
+                                onClick={handleSendMessage}
+                                disabled={(!inputMessage.trim() && !attachment) || isLoading}
+                                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-colors"
+                            >
+                                <Send className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -385,7 +424,7 @@ const ConversationPanel = ({
             <div className="p-4 border-b border-gray-700">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-lg font-semibold text-white">Cuộc trò chuyện</h2>
+                        <h2 className="text-lg font-semibold text-white">{currentConversation ? currentConversation.title : 'Cuộc trò chuyện'}</h2>
                         {source && (
                             <p className="text-sm text-gray-400 mt-1">
                                 Đang sử dụng: {source.title}
@@ -409,7 +448,7 @@ const ConversationPanel = ({
                     <div className="text-center py-8">
                         <Bot className="w-12 h-12 mx-auto mb-3 text-gray-400" />
                         <h3 className="text-lg font-medium text-white mb-2">Bắt đầu cuộc trò chuyện với Hannah</h3>
-                       
+
                     </div>
                 ) : (
                     conversations.map((message) => (
@@ -638,36 +677,49 @@ const ConversationPanel = ({
 
             {/* Input */}
             <div className="p-4 border-t border-gray-700">
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        value={inputMessage}
-                        onChange={(e) => setInputMessage(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                        placeholder={"Nhập câu hỏi của bạn..."}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-                        title="Tải file lên"
-                    >
-                        <Paperclip className="w-4 h-4" />
-                    </button>
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".pdf,.doc,.docx,.txt"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                    />
-                    <button
-                        onClick={handleSendMessage}
-                        disabled={!inputMessage.trim() || isLoading}
-                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-colors"
-                    >
-                        <Send className="w-4 h-4" />
-                    </button>
+                <div className="bg-gray-800 border border-gray-700 rounded-lg p-2">
+                    {attachment && (
+                        <div className="mb-2">
+                            <div className="inline-flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2">
+                                <File className="w-4 h-4 text-gray-400" />
+                                <span className="text-sm text-white">{attachment.name}</span>
+                                <button onClick={() => setAttachment(null)} className="p-1 text-gray-400 hover:text-white">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={inputMessage}
+                            onChange={(e) => setInputMessage(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                            placeholder={"Nhập câu hỏi của bạn..."}
+                            className="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none"
+                        />
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                            title="Tải file lên"
+                        >
+                            <Paperclip className="w-4 h-4" />
+                        </button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".pdf,.doc,.docx,.txt"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                        />
+                        <button
+                            onClick={handleSendMessage}
+                            disabled={(!inputMessage.trim() && !attachment) || isLoading}
+                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-colors"
+                        >
+                            <Send className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             </div>
 

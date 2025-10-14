@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, Upload, X } from 'lucide-react';
+import { Menu, Upload, X, File } from 'lucide-react';
 import FAQCard from './FAQCard';
 import { getFAQs } from '../api/faqApi';
 import ConversationHistorySidebar from './ConversationHistorySidebar';
@@ -163,11 +163,11 @@ const HomePage = ({
                                 className="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
                             />
                             {pendingAttachment && (
-                                <div className="ml-3 flex items-center gap-2 bg-gray-700 rounded-full px-3 py-1 max-w-[50%]">
-                                    <div className="w-5 h-5 rounded bg-red-500 text-white text-[10px] flex items-center justify-center">PDF</div>
-                                    <span className="text-xs text-gray-200 truncate">{pendingAttachment.name}</span>
-                                    <button onClick={() => setPendingAttachment(null)} className="p-1 text-gray-400 hover:text-gray-200" title="Xóa tệp">
-                                        <X className="w-3 h-3" />
+                                <div className="ml-3 flex items-center gap-2 bg-gray-700 rounded-full px-3 py-1.5 text-sm">
+                                    <File className="w-4 h-4 text-gray-300" />
+                                    <span className="text-white truncate max-w-xs">{pendingAttachment.name}</span>
+                                    <button onClick={() => setPendingAttachment(null)} className="p-1 -mr-1 text-gray-400 hover:text-white rounded-full">
+                                        <X className="w-4 h-4" />
                                     </button>
                                 </div>
                             )}
