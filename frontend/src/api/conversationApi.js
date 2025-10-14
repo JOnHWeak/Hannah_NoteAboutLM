@@ -227,13 +227,13 @@ export const searchConversations = async (query) => {
 // Bulk delete conversations
 export const deleteMultipleConversations = async (ids) => {
   await delay();
-  
+
   try {
     const conversations = getStoredConversations();
     const filteredConversations = conversations.filter(conv => !ids.includes(conv.id));
-    
+
     const deletedCount = conversations.length - filteredConversations.length;
-    
+
     if (saveConversations(filteredConversations)) {
       return {
         success: true,
@@ -248,6 +248,55 @@ export const deleteMultipleConversations = async (ids) => {
       success: false,
       data: null,
       message: 'Failed to delete conversations',
+      error: error.message
+    };
+  }
+};
+
+// Auto-create conversation with smart title generation
+export const autoCreateConversation = async (messageContent = '', attachmentName = '') => {
+  await delay(100); // Shorter delay for better UX
+
+  try {
+    let title = 'Cuộc trò chuyện mới';
+
+    // Smart title generation
+    if (attachmentName) {
+      title = attachmentName;
+    } else if (messageContent && messageContent.trim()) {
+      // Use first 50 characters of message as title
+      title = messageContent.trim().substring(0, 50);
+      if (messageContent.length > 50) {
+        title += '...';
+      }
+    }
+
+    const conversations = getStoredConversations();
+    const newConversation = {
+      id: Date.now().toString(),
+      title: title,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      messages: [],
+      isAutoCreated: true // Flag to indicate this was auto-created
+    };
+
+    const updatedConversations = [newConversation, ...conversations];
+
+    if (saveConversations(updatedConversations)) {
+      return {
+        success: true,
+        data: newConversation,
+        message: 'Conversation auto-created successfully'
+      };
+    } else {
+      throw new Error('Failed to save auto-created conversation');
+    }
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      message: 'Failed to auto-create conversation',
       error: error.message
     };
   }

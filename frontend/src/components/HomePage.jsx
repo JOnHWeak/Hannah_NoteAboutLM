@@ -40,7 +40,7 @@ const HomePage = ({
         requireAuth(() => {
             const query = searchQuery.trim() ? searchQuery : '';
             // Navigate to main app; include pendingAttachment if any
-            onNavigateToMain(query, pendingAttachment);
+            onNavigateToMain(query, pendingAttachment, true); // Pass true to auto-send
             // Clear local attachment after navigating
             setPendingAttachment(null);
         });
@@ -51,8 +51,13 @@ const HomePage = ({
             const file = event.target.files[0];
             if (file) {
                 const attachment = { name: file.name, type: file.type || 'file', size: file.size };
-                // Only store attachment; allow user to continue typing before sending
+                // Store attachment and auto-navigate with auto-send
                 setPendingAttachment(attachment);
+                // Auto-navigate to main with file attachment and auto-send
+                setTimeout(() => {
+                    onNavigateToMain('', attachment, true);
+                    setPendingAttachment(null);
+                }, 100);
             }
         });
     };
@@ -79,8 +84,8 @@ const HomePage = ({
     // Handle FAQ card click - navigate to main app with the question
     const handleFAQClick = (faq) => {
         requireAuth(() => {
-            // Navigate to main app with the FAQ question
-            onNavigateToMain(faq.question, null);
+            // Navigate to main app with the FAQ question and auto-send
+            onNavigateToMain(faq.question, null, true);
         });
     };
 
@@ -158,7 +163,12 @@ const HomePage = ({
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && (searchQuery.trim() || pendingAttachment)) {
+                                        handleSearch();
+                                        setSearchQuery(''); // Clear input after sending
+                                    }
+                                }}
                                 placeholder="Hỏi Hannah Learn About"
                                 className="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
                             />

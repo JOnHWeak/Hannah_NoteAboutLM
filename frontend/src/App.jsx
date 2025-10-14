@@ -29,7 +29,7 @@ import AIArtifactPanel from './components/AIArtifactPanel';
 import SetupGuide from './components/SetupGuide';
 import HomePage from './components/HomePage';
 import ConversationHistorySidebar from './components/ConversationHistorySidebar';
-import { getConversations, createConversation, deleteConversation } from './api/conversationApi';
+import { getConversations, createConversation, deleteConversation, autoCreateConversation } from './api/conversationApi';
 // LearningPathPage removed
 
 function App() {
@@ -111,29 +111,55 @@ function App() {
 
   const activeSource = sources.find(source => source.id === activeSourceId);
 
-  const handleNavigateToMain = async (searchQuery = '', attachment = null) => {
+  const handleNavigateToMain = async (searchQuery = '', attachment = null, autoSend = false) => {
     setCurrentPage('main');
-    if (searchQuery) {
-      setSearchQuery(searchQuery);
-    }
-    if (attachment) {
-      setPendingAttachment(attachment);
-      // Create a new conversation thread named after the file using API
+
+    // If we have a search query or attachment and autoSend is true, create new conversation
+    if ((searchQuery || attachment) && autoSend) {
       try {
-        const response = await createConversation({
-          title: attachment.name
-        });
+        const response = await autoCreateConversation(searchQuery, attachment?.name || '');
 
         if (response.success) {
           setConversationsMeta((prev) => [response.data, ...prev]);
           setActiveConversationId(response.data.id);
-          // Start with an empty message list; ConversationPanel will auto-send
           setConversations([]);
+
+          if (searchQuery) {
+            setSearchQuery(searchQuery);
+          }
+          if (attachment) {
+            setPendingAttachment(attachment);
+          }
         } else {
-          console.error('Failed to create conversation for attachment:', response.message);
+          console.error('Failed to create conversation:', response.message);
         }
       } catch (error) {
-        console.error('Error creating conversation for attachment:', error);
+        console.error('Error creating conversation:', error);
+      }
+    } else {
+      // Original behavior for non-auto-send cases
+      if (searchQuery) {
+        setSearchQuery(searchQuery);
+      }
+      if (attachment) {
+        setPendingAttachment(attachment);
+        // Create a new conversation thread named after the file using API
+        try {
+          const response = await createConversation({
+            title: attachment.name
+          });
+
+          if (response.success) {
+            setConversationsMeta((prev) => [response.data, ...prev]);
+            setActiveConversationId(response.data.id);
+            // Start with an empty message list; ConversationPanel will auto-send
+            setConversations([]);
+          } else {
+            console.error('Failed to create conversation for attachment:', response.message);
+          }
+        } catch (error) {
+          console.error('Error creating conversation for attachment:', error);
+        }
       }
     }
   };
@@ -188,6 +214,27 @@ function App() {
       }
     } catch (error) {
       console.error('Error creating conversation:', error);
+    }
+  };
+
+  // Auto-create new chat function for ConversationPanel
+  const handleAutoCreateNewChat = async (messageContent = '', attachmentName = '') => {
+    try {
+      const response = await autoCreateConversation(messageContent, attachmentName);
+
+      if (response.success) {
+        setConversationsMeta((prev) => [response.data, ...prev]);
+        setActiveConversationId(response.data.id);
+        setConversations([]);
+        setActiveSourceId(null); // Clear document context
+        return response.data;
+      } else {
+        console.error('Failed to auto-create conversation:', response.message);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error auto-creating conversation:', error);
+      return null;
     }
   };
   const handleUpdateConversationTitle = (conversationId, newTitle) => {
@@ -303,6 +350,7 @@ function App() {
                       onStartBlankConversation={handleStartBlankConversation}
                       currentConversation={conversationsMeta.find(c => c.id === activeConversationId)}
                       onUpdateConversationTitle={handleUpdateConversationTitle}
+                      onAutoCreateNewChat={handleAutoCreateNewChat}
                     />
                   </div>
                 </div>

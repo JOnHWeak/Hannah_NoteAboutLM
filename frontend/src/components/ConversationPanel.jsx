@@ -37,6 +37,7 @@ const ConversationPanel = ({
     onConsumeAttachment,
     currentConversation = null,
     onUpdateConversationTitle = null,
+    onAutoCreateNewChat = null,
 }) => {
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -70,8 +71,18 @@ const ConversationPanel = ({
             if (autoSend) {
                 setHasAutoSent(true);
                 setTimeout(() => {
-                    handleSendAttachmentAware(composedMessage, pendingAttachment);
-                    if (onConsumeAttachment) onConsumeAttachment();
+                    // Auto-create conversation if needed, then send message
+                    if (!currentConversation && onAutoCreateNewChat) {
+                        onAutoCreateNewChat(composedMessage, hasAttachment ? pendingAttachment.name : '').then(() => {
+                            setTimeout(() => {
+                                handleSendAttachmentAware(composedMessage, pendingAttachment);
+                                if (onConsumeAttachment) onConsumeAttachment();
+                            }, 200);
+                        });
+                    } else {
+                        handleSendAttachmentAware(composedMessage, pendingAttachment);
+                        if (onConsumeAttachment) onConsumeAttachment();
+                    }
                 }, 100);
             }
 
@@ -79,7 +90,7 @@ const ConversationPanel = ({
                 onSearchChange('');
             }
         }
-    }, [searchQuery, pendingAttachment, onSearchChange, autoSend, hasAutoSent]);
+    }, [searchQuery, pendingAttachment, onSearchChange, autoSend, hasAutoSent, currentConversation, onAutoCreateNewChat]);
     // Sync pendingAttachment from props to local state
     useEffect(() => {
         if (pendingAttachment) {
@@ -92,13 +103,41 @@ const ConversationPanel = ({
         if (!inputMessage.trim() && !attachment) {
             return;
         }
-        handleSendAttachmentAware(inputMessage, attachment);
-        setAttachment(null); // Xóa tệp đính kèm sau khi gửi
+
+        // Auto-create new chat if no current conversation exists
+        if (!currentConversation && onAutoCreateNewChat) {
+            const title = attachment ? attachment.name : inputMessage.trim();
+            await onAutoCreateNewChat(title);
+            // Wait a bit for the conversation to be created
+            setTimeout(() => {
+                handleSendAttachmentAware(inputMessage, attachment);
+                setAttachment(null);
+            }, 100);
+        } else {
+            handleSendAttachmentAware(inputMessage, attachment);
+            setAttachment(null); // Xóa tệp đính kèm sau khi gửi
+        }
     };
 
     const handleSendMessageWithContent = async (messageContent) => {
         if (!messageContent || !messageContent.trim()) {
             console.log('Message content is empty, not sending');
+            return;
+        }
+
+        // Auto-create new chat if no current conversation exists
+        if (!currentConversation && onAutoCreateNewChat) {
+            console.log('No current conversation, auto-creating new chat...');
+            const title = messageContent.trim().substring(0, 50); // Limit title length
+            const newConversation = await onAutoCreateNewChat(title);
+            if (!newConversation) {
+                console.error('Failed to auto-create conversation');
+                return;
+            }
+            // Wait for the conversation to be properly set before continuing
+            setTimeout(() => {
+                handleSendMessageWithContent(messageContent);
+            }, 200);
             return;
         }
 
@@ -119,11 +158,11 @@ const ConversationPanel = ({
         if (currentConversation && currentConversation.title === 'Cuộc trò chuyện mới' && conversations.length === 0) {
             try {
                 const updateResult = await updateConversation(currentConversation.id, {
-                    title: messageContent.trim()
+                    title: messageContent.trim().substring(0, 50)
                 });
 
                 if (updateResult.success && onUpdateConversationTitle) {
-                    onUpdateConversationTitle(currentConversation.id, messageContent.trim());
+                    onUpdateConversationTitle(currentConversation.id, messageContent.trim().substring(0, 50));
                 }
             } catch (error) {
                 console.error('Failed to update conversation title:', error);
@@ -329,23 +368,33 @@ const ConversationPanel = ({
         setInputMessage(question);
     };
 
-    const handleFileUpload = (event) => {
+    const handleFileUpload = async (event) => {
         const file = event.target.files[0];
         if (file) {
             const newAttachment = { name: file.name, type: file.type, size: file.size };
             setAttachment(newAttachment);
+
+            // Auto-create new chat if no current conversation exists when uploading file
+            if (!currentConversation && onAutoCreateNewChat) {
+                console.log('No current conversation, auto-creating new chat for file upload...');
+                const title = file.name;
+                await onAutoCreateNewChat(title);
+            }
         }
     };
 
 
 
-    if (!source && conversations.length === 0) {
+    // Empty state - show when no conversation exists or no messages
+    if ((!currentConversation && conversations.length === 0) || (!source && conversations.length === 0)) {
         return (
             <div className="flex-1 flex flex-col bg-gray-900">
                 {/* Header */}
                 <div className="p-4 border-b border-gray-700">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-white">{currentConversation ? currentConversation.title : 'Cuộc trò chuyện'}</h2>
+                        <h2 className="text-lg font-semibold text-white">
+                            {currentConversation ? currentConversation.title : 'Bắt đầu cuộc trò chuyện mới'}
+                        </h2>
                         <button
                             onClick={() => setShowSettings(true)}
                             className="text-gray-400 hover:text-white"
@@ -361,13 +410,12 @@ const ConversationPanel = ({
                         <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                         <h3 className="text-xl font-medium text-white mb-2">Chào mừng đến với Hannah</h3>
                         <p className="text-gray-400 mb-4">
-                            Hãy cùng khám phá và bắt đầu đặt câu hỏi!
+                            Hãy cùng khám phá và bắt đầu đặt câu hỏi! Cuộc trò chuyện sẽ được tự động tạo khi bạn gửi tin nhắn.
                         </p>
-
                     </div>
                 </div>
 
-                {/* Input Area */}
+                {/* Input Area - Auto-create chat on send */}
                 <div className="p-4 border-t border-gray-700">
                     <div className="bg-gray-800 border border-gray-700 rounded-lg p-2">
                         {attachment && (
@@ -387,7 +435,7 @@ const ConversationPanel = ({
                                 value={inputMessage}
                                 onChange={(e) => setInputMessage(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                                placeholder={"Nhập câu hỏi của bạn..."}
+                                placeholder="Nhập câu hỏi của bạn để bắt đầu cuộc trò chuyện mới..."
                                 className="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none"
                             />
                             <button
@@ -408,6 +456,7 @@ const ConversationPanel = ({
                                 onClick={handleSendMessage}
                                 disabled={(!inputMessage.trim() && !attachment) || isLoading}
                                 className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-colors"
+                                title="Gửi tin nhắn và tạo cuộc trò chuyện mới"
                             >
                                 <Send className="w-4 h-4" />
                             </button>
