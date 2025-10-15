@@ -15,7 +15,7 @@ import {
     Info,
     Bot,
 
-    Settings,
+
     X,
     Search,
     Sparkles,
@@ -177,7 +177,6 @@ const ConversationPanel = ({
         setInputMessage('');
         setIsLoading(true);
 
-        // Tự động cập nhật tiêu đề nếu đây là tin nhắn đầu tiên trong cuộc trò chuyện mới
         if (currentConversation && currentConversation.title === 'Cuộc trò chuyện mới' && conversations.length === 0) {
             try {
                 const updateResult = await updateConversation(currentConversation.id, {
@@ -204,7 +203,6 @@ const ConversationPanel = ({
 
     // Send message that may include an attachment metadata
     const handleSendAttachmentAware = async (messageContent, attachment) => {
-        // Auto-update title with filename on first message with attachment in a new convo
         if (attachment && currentConversation && currentConversation.title === 'Cuộc trò chuyện mới' && conversations.length === 0) {
             try {
                 const updateResult = await updateConversation(currentConversation.id, { title: attachment.name });
@@ -843,7 +841,7 @@ const ConversationPanel = ({
 
 
             {/* Scrollable Chat Content */}
-<div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4" style={{ paddingBottom: '100px' }}>
+<div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4" style={{ paddingBottom: '140px' }}>
 
 
 
@@ -1445,7 +1443,7 @@ const ConversationPanel = ({
             </div>
 
             {/* Fixed Input Area at Bottom */}
-            <div className="fixed bottom-0 left-0 z-20 bg-gray-900 border-t border-gray-700 p-4" style={{ right: isStudioOpen ? '0px' : '64px' }}>
+            <div className="fixed bottom-0 left-0 z-20 bg-gray-900 border-t border-gray-700 p-4" style={{ right: isStudioOpen ? '384px' : '64px' }}>
                 <div className="bg-gray-800 border border-gray-700 rounded-lg p-2">
                     {attachment && (
                         <div className="mb-2">

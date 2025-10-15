@@ -342,7 +342,7 @@ function App() {
 
             {/* Main Content Wrapper */}
             <main className="flex-1 flex overflow-hidden">
-              <div className="flex-1 flex overflow-hidden" style={{ marginRight: isStudioOpen ? '384px' : '0px' }}>
+              <div className="flex-1 flex overflow-hidden" style={{ marginRight: isStudioOpen ? '384px' : '64px' }}>
 
                 {/* Center Panel - Conversation - It will handle its own scrolling */}
                 <div className="flex-1 flex flex-col bg-gray-900 h-full">
@@ -364,6 +364,7 @@ function App() {
                     onUpdateConversationTitle={handleUpdateConversationTitle}
                     onAutoCreateNewChat={handleAutoCreateNewChat}
                     isStudioOpen={isStudioOpen}
+
                   />
                 </div>
                 {/* Right Panel - Studio - Fixed position */}
