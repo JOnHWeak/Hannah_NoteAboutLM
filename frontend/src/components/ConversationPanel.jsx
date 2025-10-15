@@ -385,6 +385,64 @@ const ConversationPanel = ({
                     ]
                 }
             };
+        } else if (actionType === 'getImages') {
+            // Case 3: Get Images button clicked
+            baseResponse.richContent = {
+                // Introduction for Get Images
+                introduction: `Đây là một số hình ảnh minh họa và video liên quan đến ${topicName} để giúp bạn hiểu rõ hơn.`,
+
+                // Image Gallery component
+                imageGallery: {
+                    title: `Hình ảnh minh họa cho ${topicName}`,
+                    images: [
+                        {
+                            id: 1,
+                            src: 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=400&h=300&fit=crop',
+                            caption: 'Sơ đồ tổng quan về kiến trúc hệ thống'
+                        },
+                        {
+                            id: 2,
+                            src: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
+                            caption: 'Quy trình phát triển phần mềm'
+                        },
+                        {
+                            id: 3,
+                            src: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop',
+                            caption: 'Mô hình cơ sở dữ liệu quan hệ'
+                        },
+                        {
+                            id: 4,
+                            src: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=300&fit=crop',
+                            caption: 'Giao diện người dùng mẫu cho ứng dụng web'
+                        }
+                    ]
+                },
+
+                // Related Videos component
+                relatedVideos: {
+                    title: `Video liên quan về ${topicName}`,
+                    videos: [
+                        {
+                            id: 1,
+                            title: `Giải thích ${topicName} qua hình ảnh`,
+                            thumbnail: 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=300&h=200&fit=crop',
+                            duration: '10:05',
+                            channel: 'Visual Learner',
+                            url: 'https://youtube.com/watch?v=visual1',
+                            description: 'Video sử dụng hình ảnh để giải thích các khái niệm phức tạp.'
+                        },
+                        {
+                            id: 2,
+                            title: `Minh họa quy trình làm việc trong ${topicName}`,
+                            thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300&h=200&fit=crop',
+                            duration: '18:30',
+                            channel: 'Tech Flow',
+                            url: 'https://youtube.com/watch?v=visual2',
+                            description: 'Xem cách các thành phần hoạt động cùng nhau qua video minh họa.'
+                        }
+                    ]
+                }
+            };
         } else {
             // Default behavior - existing format but remove Related Videos, replace with different component
             baseResponse.richContent = {
@@ -463,37 +521,39 @@ const ConversationPanel = ({
             };
         }
 
-        // Add common components for all response types
-        baseResponse.richContent.exploration = {
-            title: 'Khám phá nội dung liên quan',
-            sources: [
-                {
-                    title: `${topicName}: Những điều bạn cần biết`,
-                    description: 'Hiểu rõ vai trò và yêu cầu của một kỹ sư phần mềm',
-                    source: 'TopDev',
-                    url: 'https://topdev.vn',
-                    vietnamese_title: `Kỹ sư phần mềm là gì? Những điều cần biết về ${topicName.toLowerCase()}`
-                },
-                {
-                    title: `Đặc điểm của nghề ${topicName}`,
-                    description: 'Tìm hiểu về đặc điểm và nhiệm vụ hàng ngày của kỹ sư phần mềm',
-                    source: 'Viblo',
-                    url: 'https://viblo.asia',
-                    vietnamese_title: `${topicName} là gì? Đặc điểm của nghề`
-                },
-                {
-                    title: `Ngành ${topicName} và cơ hội nghề nghiệp`,
-                    description: 'Khám phá các chủ đề chuyên sâu về kỹ thuật phần mềm',
-                    source: 'FUNiX',
-                    url: 'https://funix.edu.vn',
-                    vietnamese_title: `Ngành ${topicName} học gì? Cơ hội việc làm ra sao?`
-                }
-            ]
-        };
+        // Add common components for all response types (only for default behavior)
+        if (actionType !== 'simplify' && actionType !== 'goDeeper') {
+            baseResponse.richContent.exploration = {
+                title: 'Khám phá nội dung liên quan',
+                sources: [
+                    {
+                        title: `${topicName}: Những điều bạn cần biết`,
+                        description: 'Hiểu rõ vai trò và yêu cầu của một kỹ sư phần mềm',
+                        source: 'TopDev',
+                        url: 'https://topdev.vn',
+                        vietnamese_title: `Kỹ sư phần mềm là gì? Những điều cần biết về ${topicName.toLowerCase()}`
+                    },
+                    {
+                        title: `Đặc điểm của nghề ${topicName}`,
+                        description: 'Tìm hiểu về đặc điểm và nhiệm vụ hàng ngày của kỹ sư phần mềm',
+                        source: 'Viblo',
+                        url: 'https://viblo.asia',
+                        vietnamese_title: `${topicName} là gì? Đặc điểm của nghề`
+                    },
+                    {
+                        title: `Ngành ${topicName} và cơ hội nghề nghiệp`,
+                        description: 'Khám phá các chủ đề chuyên sâu về kỹ thuật phần mềm',
+                        source: 'FUNiX',
+                        url: 'https://funix.edu.vn',
+                        vietnamese_title: `Ngành ${topicName} học gì? Cơ hội việc làm ra sao?`
+                    }
+                ]
+            };
+        }
 
         baseResponse.richContent.suggestedQuestions = content.suggestedQuestions || [
-            `Loại công việc nào có thể làm với bằng ${topicName.toLowerCase()}?`,
-            `Kể cho tôi thêm về các ngôn ngữ lập trình cụ thể được sử dụng trong ${topicName.toLowerCase()}`,
+            `Làm thế nào để đơn giản hóa chủ đề ${topicName.toLowerCase()}?`,
+            `Cho tôi biết thêm thông tin chi tiết về ${topicName.toLowerCase()}`,
             `Một số thách thức phổ biến trong ${topicName.toLowerCase()} là gì?`
         ];
 
@@ -627,77 +687,7 @@ const ConversationPanel = ({
         };
     };
 
-    const generateMockToolbarResponse = (action) => {
-        const mockResponses = {
-            simplify: {
-                id: Date.now() + 1,
-                type: 'ai',
-                content: '',
-                timestamp: new Date().toISOString(),
-                isToolbarResponse: true,
-                actionType: action,
-                richContent: {
-                    answer: "Đây là phiên bản đơn giản của nội dung:",
-                    mainContent: "Tôi đã đơn giản hóa thông tin để dễ hiểu hơn. Nội dung này tập trung vào những điểm cốt lõi và quan trọng nhất, loại bỏ các chi tiết phức tạp.",
-                    keyPoints: [
-                        "Khái niệm cơ bản được giải thích một cách dễ hiểu",
-                        "Các bước thực hiện được chia nhỏ và rõ ràng",
-                        "Ví dụ thực tế giúp minh họa ý tưởng"
-                    ]
-                }
-            },
-            goDeeper: {
-                id: Date.now() + 1,
-                type: 'ai',
-                content: '',
-                timestamp: new Date().toISOString(),
-                isToolbarResponse: true,
-                actionType: action,
-                richContent: {
-                    answer: "Đây là phân tích chuyên sâu về chủ đề:",
-                    mainContent: "Tôi sẽ đi sâu vào các khía cạnh kỹ thuật và lý thuyết nâng cao. Nội dung này bao gồm các chi tiết quan trọng, phân tích so sánh và các trường hợp sử dụng phức tạp.",
-                    advancedTopics: [
-                        "Phân tích kiến trúc hệ thống chi tiết",
-                        "Các mẫu thiết kế nâng cao và best practices",
-                        "Tối ưu hóa hiệu suất và scalability",
-                        "Xử lý các trường hợp edge cases"
-                    ]
-                }
-            },
-            getImages: {
-                id: Date.now() + 1,
-                type: 'ai',
-                content: '',
-                timestamp: new Date().toISOString(),
-                isToolbarResponse: true,
-                actionType: action,
-                richContent: {
-                    answer: "Đây là các hình ảnh minh họa cho chủ đề:",
-                    mainContent: "Tôi đã tạo ra một bộ sưu tập hình ảnh và sơ đồ để giúp bạn hiểu rõ hơn về chủ đề này.",
-                    images: [
-                        {
-                            src: 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=400&h=300&fit=crop',
-                            caption: 'Sơ đồ tổng quan về kiến trúc hệ thống'
-                        },
-                        {
-                            src: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
-                            caption: 'Quy trình phát triển phần mềm'
-                        },
-                        {
-                            src: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop',
-                            caption: 'Mô hình cơ sở dữ liệu'
-                        },
-                        {
-                            src: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=300&fit=crop',
-                            caption: 'Giao diện người dùng mẫu'
-                        }
-                    ]
-                }
-            }
-        };
 
-        return mockResponses[action] || mockResponses.simplify;
-    };
 
 
 
@@ -737,7 +727,7 @@ const ConversationPanel = ({
         const actionMessage = {
             id: Date.now(),
             type: 'user',
-            content: `Tôi muốn xem ${action === 'simplify' ? 'tài liệu cơ bản' : action === 'goDeeper' ? 'tài liệu chuyên sâu' : 'hình ảnh minh họa'}`,
+            content: `${action === 'simplify' ? 'Đơn giản hóa' : action === 'goDeeper' ? 'Tìm hiểu sâu hơn' : 'Hình ảnh minh họa'}`,
             timestamp: new Date().toISOString()
         };
 
@@ -745,13 +735,18 @@ const ConversationPanel = ({
         onUpdateConversations(newConversations);
         setIsLoading(true);
 
-        // Mock API call simulation
+        // Simulate API call
         setTimeout(() => {
-            const response = generateMockToolbarResponse(action);
+            // Find the last AI response to get the topic
+            const lastAiResponse = conversations.slice().reverse().find(m => m.isUnifiedResponse || m.isLearningPathResponse);
+            const content = lastAiResponse ? lastAiResponse.richContent : { topicName: 'Kỹ thuật phần mềm' };
+            const sourceData = lastAiResponse ? lastAiResponse.sourceData : null;
+
+            const response = generateUnifiedResponse(content, 'general', sourceData, action);
             const finalConversations = [...newConversations, response];
             onUpdateConversations(finalConversations);
             setIsLoading(false);
-        }, 1500);
+        }, 1000);
     };
 
 
@@ -1026,7 +1021,114 @@ const ConversationPanel = ({
                                                         </div>
                                                     )}
 
+                                                    {/* Learning Resources Module */}
+                                                    {message.richContent?.learningResources && (
+                                                        <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
+                                                            <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                                                                <BookOpen className="w-6 h-6 mr-3 text-yellow-400" />
+                                                                {message.richContent.learningResources.title}
+                                                            </h3>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                {message.richContent.learningResources.resources.map((resource) => (
+                                                                    <div key={resource.id} className="p-4 bg-gray-900/50 rounded-lg border border-gray-600">
+                                                                        <h4 className="font-semibold text-white flex items-center mb-2">
+                                                                            <span className="mr-2">{resource.icon}</span>
+                                                                            {resource.title}
+                                                                        </h4>
+                                                                        <p className="text-gray-400 text-sm mb-3">{resource.description}</p>
+                                                                        <div className="flex flex-wrap gap-2">
+                                                                            {resource.items.map((item, index) => (
+                                                                                <span key={index} className="bg-gray-700 text-gray-300 text-xs font-medium px-2 py-1 rounded-full">
+                                                                                    {item}
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
 
+                                                    {/* Terminology Table */}
+                                                    {message.richContent?.terminologyTable && (
+                                                        <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
+                                                            <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                                                                <BookOpen className="w-6 h-6 mr-3 text-purple-400" />
+                                                                {message.richContent.terminologyTable.title}
+                                                            </h3>
+                                                            <div className="overflow-x-auto">
+                                                                <table className="min-w-full divide-y divide-gray-700">
+                                                                    <thead className="bg-gray-900/50">
+                                                                        <tr>
+                                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Methodology</th>
+                                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Key Characteristics</th>
+                                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Focus</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody className="bg-gray-800/50 divide-y divide-gray-700">
+                                                                        {message.richContent.terminologyTable.terms.map((term, index) => (
+                                                                            <tr key={index}>
+                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{term.term}</td>
+                                                                                <td className="px-6 py-4 text-sm text-gray-400">{term.characteristics}</td>
+                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{term.focus}</td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Image Gallery */}
+                                                    {message.richContent?.imageGallery && (
+                                                        <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
+                                                            <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                                                                <ImageIcon className="w-6 h-6 mr-3 text-blue-400" />
+                                                                {message.richContent.imageGallery.title}
+                                                            </h3>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                                {message.richContent.imageGallery.images.map((image) => (
+                                                                    <div key={image.id} className="bg-gray-900/50 rounded-lg border border-gray-600 overflow-hidden">
+                                                                        <img
+                                                                            src={image.src}
+                                                                            alt={image.caption}
+                                                                            className="w-full h-48 object-cover"
+                                                                        />
+                                                                        <div className="p-4">
+                                                                            <p className="text-gray-300 text-sm">{image.caption}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Related Videos */}
+                                                    {message.richContent?.relatedVideos && (
+                                                        <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
+                                                            <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                                                                <PlayCircle className="w-6 h-6 mr-3 text-red-400" />
+                                                                {message.richContent.relatedVideos.title}
+                                                            </h3>
+                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                                {message.richContent.relatedVideos.videos.map((video) => (
+                                                                    <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-gray-900/50 rounded-lg border border-gray-600 hover:border-blue-500 transition-all duration-300">
+                                                                        <div className="relative">
+                                                                            <img src={video.thumbnail} alt={video.title} className="w-full h-32 object-cover rounded-t-lg" />
+                                                                            <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                                                                                {video.duration}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="p-4">
+                                                                            <h4 className="font-semibold text-white text-sm mb-1">{video.title}</h4>
+                                                                            <p className="text-gray-400 text-xs mb-1">{video.channel}</p>
+                                                                            <p className="text-gray-500 text-xs">{video.description}</p>
+                                                                        </div>
+                                                                    </a>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
 
                                                     {/* 5. Phần Khám phá (Exploration Section) */}
                                                     {message.richContent?.exploration && (
