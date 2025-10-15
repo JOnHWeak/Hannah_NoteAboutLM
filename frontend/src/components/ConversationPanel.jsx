@@ -773,20 +773,7 @@ const ConversationPanel = ({
     if ((!currentConversation && conversations.length === 0) || (!source && conversations.length === 0)) {
         return (
             <div className="flex-1 flex flex-col bg-gray-900">
-                {/* Header */}
-                <div className="p-4 border-b border-gray-700">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-white">
-                            {currentConversation ? currentConversation.title : 'Bắt đầu cuộc trò chuyện mới'}
-                        </h2>
-                        <button
-                            onClick={() => setShowSettings(true)}
-                            className="text-gray-400 hover:text-white"
-                        >
-                            <Settings className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
+
 
                 {/* Empty State */}
                 <div className="flex-1 flex items-center justify-center">
@@ -856,7 +843,7 @@ const ConversationPanel = ({
 
 
             {/* Scrollable Chat Content */}
-<div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4" style={{ paddingBottom: '100px', marginRight: isStudioOpen ? '384px' : '64px' }}>
+<div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4" style={{ paddingBottom: '100px' }}>
 
 
 
@@ -1458,7 +1445,7 @@ const ConversationPanel = ({
             </div>
 
             {/* Fixed Input Area at Bottom */}
-            <div className="fixed bottom-0 left-0 z-20 bg-gray-900 border-t border-gray-700 p-4" style={{ right: isStudioOpen ? '384px' : '64px' }}>
+            <div className="fixed bottom-0 left-0 z-20 bg-gray-900 border-t border-gray-700 p-4" style={{ right: isStudioOpen ? '0px' : '64px' }}>
                 <div className="bg-gray-800 border border-gray-700 rounded-lg p-2">
                     {attachment && (
                         <div className="mb-2">
