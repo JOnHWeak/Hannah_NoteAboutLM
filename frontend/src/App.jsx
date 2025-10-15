@@ -375,7 +375,7 @@ function App() {
                       exit={{ x: 400 }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       className="w-96 bg-gray-800 border-l border-gray-700 flex flex-col h-screen fixed right-0 z-30"
-                      style={{ top: '65px' }}
+                      style={{ top: '64px' }}
                     >
                       {activeRightTab === 'studio' && (
                         <StudioPanel
@@ -405,7 +405,8 @@ function App() {
                       animate={{ x: 0, opacity: 1 }}
                       exit={{ x: 80, opacity: 0 }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      className="w-16 bg-gray-800 border-l border-gray-700 flex flex-col items-center py-3 gap-4"
+                      className="w-16 bg-gray-800 border-l border-gray-700 flex flex-col items-center py-3 gap-4 fixed right-0 h-screen z-30"
+                      style={{ top: '64px' }}
                     >
                       <button
                         onClick={() => setIsStudioOpen(true)}
