@@ -29,12 +29,16 @@ import AIArtifactPanel from './components/AIArtifactPanel';
 import SetupGuide from './components/SetupGuide';
 import HomePage from './components/HomePage';
 import ConversationHistorySidebar from './components/ConversationHistorySidebar';
+import TheBigPicture from './components/TheBigPicture';
+
+
 import { getConversations, createConversation, deleteConversation, autoCreateConversation } from './api/conversationApi';
 // LearningPathPage removed
 
 function App() {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const [modalView, setModalView] = useState(null); // null, 'login', 'signup'
   const [showProfilePage, setShowProfilePage] = useState(false);
   const [sources, setSources] = useState([]);
@@ -269,13 +273,16 @@ function App() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* Hamburger Menu for Conversation Sidebar */}
-                <button
+                                <button
                   onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                   className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
                   title="Toggle conversation history"
                 >
                   <Menu className="w-5 h-5" />
                 </button>
+
+
+
 
                 <button
                   onClick={() => setCurrentPage('home')}
@@ -320,7 +327,9 @@ function App() {
 
           {/* Main Content */}
           <div className="flex-1 flex relative">
-            {/* Conversation History Sidebar */}
+
+
+            {/* Conversation History Sidebar - Overlay */}
             <ConversationHistorySidebar
               isOpen={isSidebarOpen}
               onClose={() => setIsSidebarOpen(false)}
@@ -331,8 +340,13 @@ function App() {
               onStartNewConversation={handleStartBlankConversation}
             />
 
-            {/* Center Panel - Conversation */}
-            <div className="flex-1 flex flex-col bg-gray-900">
+            {/* Main Content Wrapper */}
+            <main className="flex-1 flex flex-col">
+              <div className="flex-1 flex">
+
+
+                {/* Center Panel - Conversation */}
+                <div className="flex-1 flex flex-col bg-gray-900">
                   <div className="flex-1 flex flex-col">
                     <ConversationPanel
                       source={activeSource}
@@ -440,6 +454,8 @@ function App() {
                     </motion.div>
                   )}
                 </AnimatePresence>
+              </div>
+            </main>
 
 
 

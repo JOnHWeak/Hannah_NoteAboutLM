@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Calendar, Plus, X, Loader2 } from 'lucide-react';
 
+
 const ConversationHistorySidebar = ({
   isOpen,
   onClose,
