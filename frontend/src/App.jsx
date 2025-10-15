@@ -32,7 +32,7 @@ import ConversationHistorySidebar from './components/ConversationHistorySidebar'
 import TheBigPicture from './components/TheBigPicture';
 
 
-import { getConversations, createConversation, deleteConversation, autoCreateConversation } from './api/conversationApi';
+import { getConversations, getConversationById, createConversation, updateConversation, deleteConversation, autoCreateConversation } from './api/conversationApi';
 // LearningPathPage removed
 
 function App() {
@@ -97,6 +97,30 @@ function App() {
 
     loadConversations();
   }, []);
+
+  // Load messages when activeConversationId changes
+  useEffect(() => {
+    const loadConversationMessages = async () => {
+      if (!activeConversationId) {
+        setConversations([]);
+        return;
+      }
+
+      try {
+        const response = await getConversationById(activeConversationId);
+        if (response.success && response.data.messages) {
+          setConversations(response.data.messages);
+        } else {
+          setConversations([]);
+        }
+      } catch (error) {
+        console.error('Error loading conversation messages:', error);
+        setConversations([]);
+      }
+    };
+
+    loadConversationMessages();
+  }, [activeConversationId]);
 
   // Save sources to localStorage whenever sources change
   useEffect(() => {
