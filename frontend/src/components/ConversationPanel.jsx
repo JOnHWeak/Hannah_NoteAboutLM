@@ -321,36 +321,36 @@ const ConversationPanel = ({
                 introduction: `Hãy tìm hiểu sâu hơn về ${topicName}. ${content.answer || content.mainContent || `${topicName} có nhiều khía cạnh phức tạp và thú vị. Chúng ta sẽ khám phá các khái niệm nâng cao và ứng dụng thực tế trong ngành công nghiệp.`}`,
 
                 // Terminology Table (replaces interactive timeline)
-                terminologyTable: {
-                    title: `Thuật ngữ chuyên môn trong ${topicName}`,
-                    terms: [
-                        {
-                            term: 'Waterfall',
-                            characteristics: 'Sequential phases (requirements, design, implementation, testing, deployment), each completed before the next begins.',
-                            focus: 'Structured, linear process.'
-                        },
-                        {
-                            term: 'Agile',
-                            characteristics: 'Iterative and incremental development, with a focus on flexibility, collaboration, and customer feedback.',
-                            focus: 'Adaptability, speed, customer satisfaction.'
-                        },
-                        {
-                            term: 'DevOps',
-                            characteristics: 'Combines software development (Dev) and IT operations (Ops) to shorten the systems development life cycle and provide continuous delivery with high software quality.',
-                            focus: 'Collaboration, automation, continuous delivery.'
-                        },
-                        {
-                            term: 'Microservices',
-                            characteristics: 'Architectural approach that structures an application as a collection of loosely coupled services.',
-                            focus: 'Scalability, maintainability, technology diversity.'
-                        },
-                        {
-                            term: 'API',
-                            characteristics: 'Application Programming Interface - set of protocols and tools for building software applications.',
-                            focus: 'Integration, modularity, reusability.'
-                        }
-                    ]
-                },
+               terminologyTable: {
+    title: `Thuật ngữ chuyên môn trong ${topicName}`,
+    terms: [
+        {
+            term: 'Waterfall',
+            characteristics: 'Các giai đoạn tuần tự (lấy yêu cầu, thiết kế, triển khai, kiểm thử, phát hành), mỗi giai đoạn phải hoàn thành trước khi giai đoạn tiếp theo bắt đầu.',
+            focus: 'Quy trình có cấu trúc, tuyến tính.'
+        },
+        {
+            term: 'Agile',
+            characteristics: 'Phát triển lặp lại và tăng trưởng, tập trung vào sự linh hoạt, hợp tác và phản hồi của khách hàng.',
+            focus: 'Khả năng thích ứng, tốc độ, sự hài lòng của khách hàng.'
+        },
+        {
+            term: 'DevOps',
+            characteristics: 'Kết hợp giữa phát triển phần mềm (Dev) và vận hành CNTT (Ops) để rút ngắn vòng đời phát triển hệ thống và cung cấp sản phẩm liên tục với chất lượng phần mềm cao.',
+            focus: 'Hợp tác, tự động hóa, phân phối liên tục.'
+        },
+        {
+            term: 'Microservices',
+            characteristics: 'Phương pháp kiến trúc cấu trúc một ứng dụng thành một tập hợp các dịch vụ được kết nối lỏng lẻo.',
+            focus: 'Khả năng mở rộng, khả năng bảo trì, đa dạng công nghệ.'
+        },
+        {
+            term: 'API',
+            characteristics: 'Giao diện lập trình ứng dụng - tập hợp các giao thức và công cụ để xây dựng các ứng dụng phần mềm.',
+            focus: 'Tích hợp, mô-đun hóa, khả năng tái sử dụng.'
+        }
+    ]
+},
 
                 // Related Videos component (replaces interactiveList)
                 relatedVideos: {

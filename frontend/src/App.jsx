@@ -5,7 +5,7 @@ import {
   Lock,
   Menu,
   ChevronDown,
-
+  
   Video,
   Map,
   FileText as Report,
@@ -297,10 +297,10 @@ function App() {
               </div>
 
               <div className="flex items-center gap-4">
-                <button className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
+                {/* <button className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
                   <Lock className="w-4 h-4" />
                   <span className="text-sm">Chia sẻ</span>
-                </button>
+                </button> */}
                 {isAuthLoading ? (
                   <div className="w-8 h-8 bg-gray-600 rounded-full animate-pulse"></div>
                 ) : isAuthenticated ? (
@@ -342,7 +342,7 @@ function App() {
 
             {/* Main Content Wrapper */}
             <main className="flex-1 flex overflow-hidden">
-              <div className="flex-1 flex overflow-hidden">
+              <div className="flex-1 flex overflow-hidden" style={{ marginRight: isStudioOpen ? '384px' : '0px' }}>
 
                 {/* Center Panel - Conversation - It will handle its own scrolling */}
                 <div className="flex-1 flex flex-col bg-gray-900 h-full">
