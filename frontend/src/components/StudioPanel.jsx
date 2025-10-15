@@ -176,7 +176,8 @@ const StudioPanel = ({ source, onTogglePanel }) => {
       </div>
 
       {/* Studio Outputs */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto p-4">
         {studioOutputs.length === 0 ? (
           <div className="text-center py-8">
             <Sparkles className="w-12 h-12 mx-auto mb-3 text-gray-400" />
@@ -221,6 +222,7 @@ const StudioPanel = ({ source, onTogglePanel }) => {
             </div>
           </motion.div>
         )}
+        </div>
       </div>
     </div>
   );

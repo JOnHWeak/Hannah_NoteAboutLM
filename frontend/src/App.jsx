@@ -341,32 +341,30 @@ function App() {
             />
 
             {/* Main Content Wrapper */}
-            <main className="flex-1 flex flex-col">
-              <div className="flex-1 flex">
+            <main className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 flex overflow-hidden">
 
 
                 {/* Center Panel - Conversation */}
-                <div className="flex-1 flex flex-col bg-gray-900">
-                  <div className="flex-1 flex flex-col">
-                    <ConversationPanel
-                      source={activeSource}
-                      conversations={conversations}
-                      onUpdateConversations={setConversations}
-                      searchQuery={searchQuery}
-                      onSearchChange={setSearchQuery}
-                      autoSend={true}
-                      pendingAttachment={pendingAttachment}
-                      onConsumeAttachment={() => setPendingAttachment(null)}
-                      conversationsMeta={conversationsMeta}
-                      activeConversationId={activeConversationId}
-                      onSelectConversation={setActiveConversationId}
-                      onDeleteConversation={handleDeleteConversation}
-                      onStartBlankConversation={handleStartBlankConversation}
-                      currentConversation={conversationsMeta.find(c => c.id === activeConversationId)}
-                      onUpdateConversationTitle={handleUpdateConversationTitle}
-                      onAutoCreateNewChat={handleAutoCreateNewChat}
-                    />
-                  </div>
+                <div className="flex-1 flex flex-col bg-gray-900 h-full">
+                  <ConversationPanel
+                    source={activeSource}
+                    conversations={conversations}
+                    onUpdateConversations={setConversations}
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    autoSend={true}
+                    pendingAttachment={pendingAttachment}
+                    onConsumeAttachment={() => setPendingAttachment(null)}
+                    conversationsMeta={conversationsMeta}
+                    activeConversationId={activeConversationId}
+                    onSelectConversation={setActiveConversationId}
+                    onDeleteConversation={handleDeleteConversation}
+                    onStartBlankConversation={handleStartBlankConversation}
+                    currentConversation={conversationsMeta.find(c => c.id === activeConversationId)}
+                    onUpdateConversationTitle={handleUpdateConversationTitle}
+                    onAutoCreateNewChat={handleAutoCreateNewChat}
+                  />
                 </div>
                 {/* Right Panel - Studio */}
                 <AnimatePresence>
@@ -376,7 +374,7 @@ function App() {
                       animate={{ x: 0 }}
                       exit={{ x: 400 }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      className="w-96 bg-gray-800 border-l border-gray-700 flex flex-col"
+                      className="w-96 bg-gray-800 border-l border-gray-700 flex flex-col h-full"
                     >
                       {activeRightTab === 'studio' && (
                         <StudioPanel

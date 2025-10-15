@@ -25,7 +25,8 @@ import {
     HelpCircle,
     Clock,
     List,
-    Eye,
+    PlayCircle,
+
     ThumbsUp,
     ThumbsDown,
     Share2,
@@ -36,6 +37,8 @@ import {
 } from 'lucide-react';
 import { searchFAQs } from '../api/faqApi';
 import { updateConversation } from '../api/conversationApi';
+import TheBigPicture from './TheBigPicture';
+import BotMessageToolbar from './BotMessageToolbar';
 
 
 
@@ -63,12 +66,16 @@ const ConversationPanel = ({
     const [answerLength, setAnswerLength] = useState('default');
     const [hasAutoSent, setHasAutoSent] = useState(false);
     const [attachment, setAttachment] = useState(null);
-    const [expandedHint, setExpandedHint] = useState(null);
+    const [playingVideo, setPlayingVideo] = useState(null);
+
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
+    const chatContainerRef = useRef(null);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
     };
 
     useEffect(() => {
@@ -220,7 +227,7 @@ const ConversationPanel = ({
     };
 
     // Unified response generator with vertical Vietnamese structure
-    const generateUnifiedResponse = (content, responseType = 'general', sourceData = null) => {
+    const generateUnifiedResponse = (content, responseType = 'general', sourceData = null, actionType = null) => {
         const topicName = content.topicName || sourceData?.category || 'Kỹ thuật phần mềm';
 
         const baseResponse = {
@@ -230,7 +237,157 @@ const ConversationPanel = ({
             timestamp: new Date().toISOString(),
             isUnifiedResponse: true,
             responseType: responseType,
-            richContent: {
+            actionType: actionType,
+            richContent: {}
+        };
+
+        // Handle different action types
+        if (actionType === 'simplify') {
+            // Case 1: Simplify button clicked
+            baseResponse.richContent = {
+                // Introduction section for Simplify
+                introduction: `Hãy đơn giản hóa ${topicName}. ${content.answer || content.mainContent || `${topicName} là một lĩnh vực quan trọng trong công nghệ thông tin. Chúng ta sẽ tìm hiểu những điều cơ bản và quan trọng nhất để bạn có thể bắt đầu học một cách dễ dàng.`}`,
+
+                // Interactive Timeline with slightly more detailed data
+                interactiveTimeline: {
+                    title: `Lộ trình học ${topicName} đơn giản`,
+                    stages: [
+                        {
+                            id: 1,
+                            title: 'Bước 1: Hiểu khái niệm cơ bản',
+                            description: 'Tìm hiểu các thuật ngữ và khái niệm cơ bản nhất. Đây là nền tảng để bạn có thể tiếp tục học các chủ đề phức tạp hơn.',
+                            image: 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=300&h=200&fit=crop',
+                            duration: '2-3 tuần',
+                            keyPoints: ['Thuật ngữ cơ bản', 'Nguyên lý hoạt động', 'Ví dụ thực tế']
+                        },
+                        {
+                            id: 2,
+                            title: 'Bước 2: Thực hành đơn giản',
+                            description: 'Bắt đầu với các bài tập và dự án nhỏ để áp dụng kiến thức đã học. Tập trung vào việc hiểu rõ từng bước.',
+                            image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300&h=200&fit=crop',
+                            duration: '3-4 tuần',
+                            keyPoints: ['Bài tập cơ bản', 'Dự án nhỏ', 'Thực hành hàng ngày']
+                        },
+                        {
+                            id: 3,
+                            title: 'Bước 3: Xây dựng dự án đầu tiên',
+                            description: 'Tạo ra sản phẩm đầu tiên của bạn. Đây là cách tốt nhất để củng cố kiến thức và tạo động lực học tập.',
+                            image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300&h=200&fit=crop',
+                            duration: '4-6 tuần',
+                            keyPoints: ['Dự án cá nhân', 'Áp dụng kiến thức', 'Tạo portfolio']
+                        }
+                    ]
+                },
+
+                // Related Videos component (replaces interactiveList)
+                relatedVideos: {
+                    title: `Video học ${topicName} cơ bản`,
+                    videos: [
+                        {
+                            id: 1,
+                            title: `${topicName} cho người mới bắt đầu`,
+                            thumbnail: 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=300&h=200&fit=crop',
+                            duration: '15:30',
+                            channel: 'Học Lập Trình',
+                            url: 'https://youtube.com/watch?v=example1',
+                            description: 'Video giới thiệu cơ bản về lĩnh vực này'
+                        },
+                        {
+                            id: 2,
+                            title: `Hướng dẫn thực hành ${topicName}`,
+                            thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300&h=200&fit=crop',
+                            duration: '22:45',
+                            channel: 'Code Dạo',
+                            url: 'https://youtube.com/watch?v=example2',
+                            description: 'Thực hành từng bước một cách chi tiết'
+                        },
+                        {
+                            id: 3,
+                            title: `Dự án đầu tiên với ${topicName}`,
+                            thumbnail: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300&h=200&fit=crop',
+                            duration: '35:20',
+                            channel: 'Lập Trình Việt',
+                            url: 'https://youtube.com/watch?v=example3',
+                            description: 'Xây dựng dự án thực tế từ A đến Z'
+                        }
+                    ]
+                }
+            };
+        } else if (actionType === 'goDeeper') {
+            // Case 2: Learn More button clicked
+            baseResponse.richContent = {
+                // Introduction section for Learn More
+                introduction: `Hãy tìm hiểu sâu hơn về ${topicName}. ${content.answer || content.mainContent || `${topicName} có nhiều khía cạnh phức tạp và thú vị. Chúng ta sẽ khám phá các khái niệm nâng cao và ứng dụng thực tế trong ngành công nghiệp.`}`,
+
+                // Terminology Table (replaces interactive timeline)
+                terminologyTable: {
+                    title: `Thuật ngữ chuyên môn trong ${topicName}`,
+                    terms: [
+                        {
+                            term: 'Waterfall',
+                            characteristics: 'Sequential phases (requirements, design, implementation, testing, deployment), each completed before the next begins.',
+                            focus: 'Structured, linear process.'
+                        },
+                        {
+                            term: 'Agile',
+                            characteristics: 'Iterative and incremental development, with a focus on flexibility, collaboration, and customer feedback.',
+                            focus: 'Adaptability, speed, customer satisfaction.'
+                        },
+                        {
+                            term: 'DevOps',
+                            characteristics: 'Combines software development (Dev) and IT operations (Ops) to shorten the systems development life cycle and provide continuous delivery with high software quality.',
+                            focus: 'Collaboration, automation, continuous delivery.'
+                        },
+                        {
+                            term: 'Microservices',
+                            characteristics: 'Architectural approach that structures an application as a collection of loosely coupled services.',
+                            focus: 'Scalability, maintainability, technology diversity.'
+                        },
+                        {
+                            term: 'API',
+                            characteristics: 'Application Programming Interface - set of protocols and tools for building software applications.',
+                            focus: 'Integration, modularity, reusability.'
+                        }
+                    ]
+                },
+
+                // Related Videos component (replaces interactiveList)
+                relatedVideos: {
+                    title: `Video chuyên sâu về ${topicName}`,
+                    videos: [
+                        {
+                            id: 1,
+                            title: `Kiến trúc ${topicName} nâng cao`,
+                            thumbnail: 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=300&h=200&fit=crop',
+                            duration: '45:30',
+                            channel: 'Tech Expert',
+                            url: 'https://youtube.com/watch?v=advanced1',
+                            description: 'Phân tích kiến trúc và design patterns'
+                        },
+                        {
+                            id: 2,
+                            title: `Best Practices trong ${topicName}`,
+                            thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300&h=200&fit=crop',
+                            duration: '38:15',
+                            channel: 'Pro Developer',
+                            url: 'https://youtube.com/watch?v=advanced2',
+                            description: 'Các phương pháp tốt nhất từ chuyên gia'
+                        },
+                        {
+                            id: 3,
+                            title: `Case Study: ${topicName} trong doanh nghiệp`,
+                            thumbnail: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300&h=200&fit=crop',
+                            duration: '52:40',
+                            channel: 'Enterprise Tech',
+                            url: 'https://youtube.com/watch?v=advanced3',
+                            description: 'Ứng dụng thực tế trong các công ty lớn'
+                        }
+                    ]
+                }
+            };
+        } else {
+            // Default behavior - existing format but remove Related Videos, replace with different component
+            baseResponse.richContent = {
                 // 1. Phần Mở đầu (Introduction Section)
                 introduction: content.answer || content.mainContent || `${topicName} là một lĩnh vực quan trọng trong công nghệ thông tin, đòi hỏi sự kết hợp giữa kiến thức lý thuyết vững chắc và kỹ năng thực hành. Việc hiểu rõ về chủ đề này sẽ giúp bạn xây dựng nền tảng vững chắc cho sự nghiệp trong lĩnh vực công nghệ.`,
 
@@ -265,80 +422,80 @@ const ConversationPanel = ({
                     ]
                 },
 
-                // 3. Interactive List Module
-                interactiveList: {
-                    title: `Các lĩnh vực học tập chính trong ${topicName}`,
-                    areas: [
+                // 3. Learning Resources Module (replaces interactiveList, different from Related Videos)
+                learningResources: {
+                    title: `Tài nguyên học tập ${topicName}`,
+                    resources: [
                         {
                             id: 1,
-                            title: 'Lập trình cơ bản',
-                            description: 'Nắm vững ngôn ngữ lập trình và cú pháp cơ bản',
-                            image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=200&h=150&fit=crop'
+                            type: 'course',
+                            title: 'Khóa học trực tuyến',
+                            description: 'Các khóa học có cấu trúc từ cơ bản đến nâng cao',
+                            icon: '🎓',
+                            items: ['Coursera', 'edX', 'Udemy', 'FreeCodeCamp']
                         },
                         {
                             id: 2,
-                            title: 'Cấu trúc dữ liệu & Thuật toán',
-                            description: 'Hiểu và áp dụng các cấu trúc dữ liệu hiệu quả',
-                            image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=200&h=150&fit=crop'
+                            type: 'book',
+                            title: 'Sách chuyên môn',
+                            description: 'Tài liệu tham khảo và sách giáo khoa',
+                            icon: '📚',
+                            items: ['Clean Code', 'Design Patterns', 'System Design', 'Algorithms']
                         },
                         {
                             id: 3,
-                            title: 'Phát triển ứng dụng',
-                            description: 'Xây dựng các ứng dụng web, mobile hoặc desktop',
-                            image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&h=150&fit=crop'
+                            type: 'practice',
+                            title: 'Nền tảng thực hành',
+                            description: 'Các trang web để luyện tập coding',
+                            icon: '💻',
+                            items: ['LeetCode', 'HackerRank', 'CodeWars', 'GitHub']
                         },
                         {
                             id: 4,
-                            title: 'Quản lý dự án',
-                            description: 'Học cách quản lý và phối hợp trong các dự án phần mềm',
-                            image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=150&fit=crop'
+                            type: 'community',
+                            title: 'Cộng đồng học tập',
+                            description: 'Tham gia cộng đồng để học hỏi và chia sẻ',
+                            icon: '👥',
+                            items: ['Stack Overflow', 'Reddit', 'Discord', 'Viblo']
                         }
                     ]
-                },
+                }
+            };
+        }
 
-                // 4. Stop & Think Module
-                stopAndThink: {
-                    question: `Lĩnh vực ${topicName.toLowerCase()} đang không ngừng thay đổi với sự phát triển của công nghệ mới.`,
-                    thoughtQuestion: `Làm thế nào tốc độ thay đổi nhanh chóng của công nghệ có thể ảnh hưởng đến lộ trình học tập của một kỹ sư phần mềm trong suốt sự nghiệp của họ?`,
-                    hint: 'Việc học tập liên tục và thích ứng với công nghệ mới là chìa khóa để duy trì sự cạnh tranh trong ngành công nghệ. Điều này đòi hỏi kỹ năng tự học và khả năng cập nhật kiến thức thường xuyên.'
+        // Add common components for all response types
+        baseResponse.richContent.exploration = {
+            title: 'Khám phá nội dung liên quan',
+            sources: [
+                {
+                    title: `${topicName}: Những điều bạn cần biết`,
+                    description: 'Hiểu rõ vai trò và yêu cầu của một kỹ sư phần mềm',
+                    source: 'TopDev',
+                    url: 'https://topdev.vn',
+                    vietnamese_title: `Kỹ sư phần mềm là gì? Những điều cần biết về ${topicName.toLowerCase()}`
                 },
-
-                // 5. Exploration Section
-                exploration: {
-                    title: 'Khám phá nội dung liên quan',
-                    sources: [
-                        {
-                            title: `${topicName}: Những điều bạn cần biết`,
-                            description: 'Hiểu rõ vai trò và yêu cầu của một kỹ sư phần mềm',
-                            source: 'TopDev',
-                            url: 'https://topdev.vn',
-                            vietnamese_title: `Kỹ sư phần mềm là gì? Những điều cần biết về ${topicName.toLowerCase()}`
-                        },
-                        {
-                            title: `Đặc điểm của nghề ${topicName}`,
-                            description: 'Tìm hiểu về đặc điểm và nhiệm vụ hàng ngày của kỹ sư phần mềm',
-                            source: 'Viblo',
-                            url: 'https://viblo.asia',
-                            vietnamese_title: `${topicName} là gì? Đặc điểm của nghề`
-                        },
-                        {
-                            title: `Ngành ${topicName} và cơ hội nghề nghiệp`,
-                            description: 'Khám phá các chủ đề chuyên sâu về kỹ thuật phần mềm',
-                            source: 'FUNiX',
-                            url: 'https://funix.edu.vn',
-                            vietnamese_title: `Ngành ${topicName} học gì? Cơ hội việc làm ra sao?`
-                        }
-                    ]
+                {
+                    title: `Đặc điểm của nghề ${topicName}`,
+                    description: 'Tìm hiểu về đặc điểm và nhiệm vụ hàng ngày của kỹ sư phần mềm',
+                    source: 'Viblo',
+                    url: 'https://viblo.asia',
+                    vietnamese_title: `${topicName} là gì? Đặc điểm của nghề`
                 },
-
-                // 6. Suggested Questions
-                suggestedQuestions: content.suggestedQuestions || [
-                    `Loại công việc nào có thể làm với bằng ${topicName.toLowerCase()}?`,
-                    `Kể cho tôi thêm về các ngôn ngữ lập trình cụ thể được sử dụng trong ${topicName.toLowerCase()}`,
-                    `Một số thách thức phổ biến trong ${topicName.toLowerCase()} là gì?`
-                ]
-            }
+                {
+                    title: `Ngành ${topicName} và cơ hội nghề nghiệp`,
+                    description: 'Khám phá các chủ đề chuyên sâu về kỹ thuật phần mềm',
+                    source: 'FUNiX',
+                    url: 'https://funix.edu.vn',
+                    vietnamese_title: `Ngành ${topicName} học gì? Cơ hội việc làm ra sao?`
+                }
+            ]
         };
+
+        baseResponse.richContent.suggestedQuestions = content.suggestedQuestions || [
+            `Loại công việc nào có thể làm với bằng ${topicName.toLowerCase()}?`,
+            `Kể cho tôi thêm về các ngôn ngữ lập trình cụ thể được sử dụng trong ${topicName.toLowerCase()}`,
+            `Một số thách thức phổ biến trong ${topicName.toLowerCase()} là gì?`
+        ];
 
         // Add specific data based on response type
         if (responseType === 'faq' && sourceData) {
@@ -418,7 +575,7 @@ const ConversationPanel = ({
                 // Video component
                 video: {
                     title: 'Lộ trình học Kỹ thuật phần mềm từ cơ bản đến nâng cao',
-                    url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                    url: 'https://www.youtube.com/watch?v=psHYcRSo2Tg',
                     thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop',
                     duration: '15:30',
                     description: 'Video hướng dẫn chi tiết về lộ trình học Kỹ thuật phần mềm'
@@ -470,84 +627,79 @@ const ConversationPanel = ({
         };
     };
 
-    const generateLearningPathActionResponse = (action) => {
-        const actionData = {
+    const generateMockToolbarResponse = (action) => {
+        const mockResponses = {
             simplify: {
-                title: "Tài liệu cơ bản - Kỹ thuật phần mềm",
-                resources: [
-                    { title: 'Giáo trình Nhập môn Kỹ thuật phần mềm', description: 'Tổng quan về các khái niệm cơ bản và quy trình phát triển phần mềm.', type: 'pdf' },
-                    { title: 'Phân tích và Thiết kế hướng đối tượng', description: 'Tìm hiểu về UML và các mẫu thiết kế phổ biến.', type: 'pdf' }
-                ],
-                websites: [
-                    { title: 'TopDev Blog', description: 'Các bài viết chuyên sâu về công nghệ và kỹ thuật phần mềm.', url: 'https://topdev.vn/blog' },
-                    { title: 'Viblo', description: 'Cộng đồng chia sẻ kiến thức lập trình và công nghệ.', url: 'https://viblo.asia/' }
-                ]
+                id: Date.now() + 1,
+                type: 'ai',
+                content: '',
+                timestamp: new Date().toISOString(),
+                isToolbarResponse: true,
+                actionType: action,
+                richContent: {
+                    answer: "Đây là phiên bản đơn giản của nội dung:",
+                    mainContent: "Tôi đã đơn giản hóa thông tin để dễ hiểu hơn. Nội dung này tập trung vào những điểm cốt lõi và quan trọng nhất, loại bỏ các chi tiết phức tạp.",
+                    keyPoints: [
+                        "Khái niệm cơ bản được giải thích một cách dễ hiểu",
+                        "Các bước thực hiện được chia nhỏ và rõ ràng",
+                        "Ví dụ thực tế giúp minh họa ý tưởng"
+                    ]
+                }
             },
             goDeeper: {
-                title: "Tài liệu chuyên sâu - Kỹ thuật phần mềm",
-                resources: [
-                    { title: 'Giáo trình Chuyên sâu Kỹ thuật phần mềm', description: 'Nghiên cứu các mô hình phát triển nâng cao và quản lý dự án.', type: 'pdf' },
-                    { title: 'Kiểm thử và Đảm bảo chất lượng phần mềm', description: 'Các kỹ thuật kiểm thử, tự động hóa và quy trình QA/QC.', type: 'pdf' }
-                ],
-                definitions: [
-                    { term: 'Agile', definition: 'Một phương pháp phát triển phần mềm linh hoạt, tập trung vào việc lặp lại và tăng trưởng.' },
-                    { term: 'Scrum', definition: 'Một framework trong Agile, quản lý công việc thông qua các sprint ngắn.' }
-                ],
-                faqs: [
-                    { question: 'Học Kỹ thuật phần mềm bắt đầu từ đâu?', answer: 'Nên bắt đầu với kiến thức nền tảng về lập trình (C++, Java), sau đó học về cấu trúc dữ liệu, giải thuật và các mô hình phát triển.' },
-                    { question: 'Sự khác biệt giữa KTPM và Khoa học máy tính?', answer: 'KTPM tập trung vào quy trình xây dựng phần mềm, trong khi KHMT tập trung vào lý thuyết tính toán và thuật toán.' }
-                ]
+                id: Date.now() + 1,
+                type: 'ai',
+                content: '',
+                timestamp: new Date().toISOString(),
+                isToolbarResponse: true,
+                actionType: action,
+                richContent: {
+                    answer: "Đây là phân tích chuyên sâu về chủ đề:",
+                    mainContent: "Tôi sẽ đi sâu vào các khía cạnh kỹ thuật và lý thuyết nâng cao. Nội dung này bao gồm các chi tiết quan trọng, phân tích so sánh và các trường hợp sử dụng phức tạp.",
+                    advancedTopics: [
+                        "Phân tích kiến trúc hệ thống chi tiết",
+                        "Các mẫu thiết kế nâng cao và best practices",
+                        "Tối ưu hóa hiệu suất và scalability",
+                        "Xử lý các trường hợp edge cases"
+                    ]
+                }
             },
             getImages: {
-                title: "Hình ảnh minh họa - Kỹ thuật phần mềm",
-                images: [
-                    { src: 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=400&h=300&fit=crop', caption: 'Mô hình phát triển phần mềm Agile' },
-                    { src: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop', caption: 'Sơ đồ UML trong phân tích thiết kế' },
-                    { src: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop', caption: 'Quy trình kiểm thử tự động' },
-                    { src: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=300&fit=crop', caption: 'Kiến trúc Microservices' }
-                ]
+                id: Date.now() + 1,
+                type: 'ai',
+                content: '',
+                timestamp: new Date().toISOString(),
+                isToolbarResponse: true,
+                actionType: action,
+                richContent: {
+                    answer: "Đây là các hình ảnh minh họa cho chủ đề:",
+                    mainContent: "Tôi đã tạo ra một bộ sưu tập hình ảnh và sơ đồ để giúp bạn hiểu rõ hơn về chủ đề này.",
+                    images: [
+                        {
+                            src: 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=400&h=300&fit=crop',
+                            caption: 'Sơ đồ tổng quan về kiến trúc hệ thống'
+                        },
+                        {
+                            src: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
+                            caption: 'Quy trình phát triển phần mềm'
+                        },
+                        {
+                            src: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop',
+                            caption: 'Mô hình cơ sở dữ liệu'
+                        },
+                        {
+                            src: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=300&fit=crop',
+                            caption: 'Giao diện người dùng mẫu'
+                        }
+                    ]
+                }
             }
         };
 
-        return {
-            id: Date.now() + 1,
-            type: 'ai',
-            content: '',
-            timestamp: new Date().toISOString(),
-            isLearningPathActionResponse: true,
-            actionType: action,
-            richContent: {
-                answer: `Đây là ${actionData[action].title}:`,
-                actionData: actionData[action],
-
-                // Add persistent action buttons
-                learningPathActions: {
-                    simplify: {
-                        title: "Đơn giản",
-                        description: "Tài liệu cơ bản và nguồn học thiết yếu",
-                        color: "green"
-                    },
-                    goDeeper: {
-                        title: "Tìm hiểu sâu hơn",
-                        description: "Tài liệu chuyên sâu và FAQ chi tiết",
-                        color: "blue"
-                    },
-                    getImages: {
-                        title: "Lấy hình ảnh",
-                        description: "Hình ảnh và infographic minh họa",
-                        color: "purple"
-                    }
-                },
-
-                suggestedQuestions: [
-                    'Có thể giải thích thêm về phần nào đó không?',
-                    'Có ví dụ cụ thể nào khác không?',
-                    'Làm thế nào để áp dụng điều này trong thực tế?',
-                    'Có tài liệu tham khảo nào khác không?'
-                ]
-            }
-        };
+        return mockResponses[action] || mockResponses.simplify;
     };
+
+
 
 
 
@@ -593,8 +745,9 @@ const ConversationPanel = ({
         onUpdateConversations(newConversations);
         setIsLoading(true);
 
+        // Mock API call simulation
         setTimeout(() => {
-            const response = generateLearningPathActionResponse(action);
+            const response = generateMockToolbarResponse(action);
             const finalConversations = [...newConversations, response];
             onUpdateConversations(finalConversations);
             setIsLoading(false);
@@ -704,43 +857,23 @@ const ConversationPanel = ({
 
     return (
         <div className="flex flex-col h-full bg-gray-900">
-            {/* Header */}
-            <div className="p-4 border-b border-gray-700">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-lg font-semibold text-white">{currentConversation ? currentConversation.title : 'Cuộc trò chuyện'}</h2>
-                        {source && (
-                            <p className="text-sm text-gray-400 mt-1">
-                                Đang sử dụng: {source.title}
-                            </p>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setShowSettings(true)}
-                            className="text-gray-400 hover:text-white"
-                        >
-                            <Settings className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-
             {/* Two-column Layout */}
-            <div className="flex flex-1 overflow-hidden">
-                {/* Left Column: Suggestions */}
-                <div className="w-1/3 overflow-y-auto p-4 border-r border-gray-700">
-                    <TheBigPicture
-                        onSuggestionClick={(question) => {
-                            setInputMessage(question);
-                            handleSendMessageWithContent(question);
-                        }}
-                    />
+            <div className="flex flex-1 overflow-hidden h-full">
+                {/* Left Column: Suggestions - Fixed position */}
+                <div className="w-3/10 flex flex-col h-full overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-4">
+                        <TheBigPicture
+                            onSuggestionClick={(question) => {
+                                setInputMessage(question);
+                                handleSendMessageWithContent(question);
+                            }}
+                        />
+                    </div>
                 </div>
 
                 {/* Right Column: Chat Stream */}
-                <div className="flex-1 flex flex-col">
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                <div className="w-7/10 flex flex-col h-full overflow-hidden">
+                    <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
 
 
 
@@ -811,7 +944,7 @@ const ConversationPanel = ({
                                                                 {message.richContent.interactiveTimeline.title}
                                                             </h3>
                                                             <div className="space-y-6">
-                                                                {message.richContent.interactiveTimeline.stages.map((stage, index) => (
+                                                                {message.richContent.interactiveTimeline.stages.map((stage) => (
                                                                     <div key={stage.id} className="flex space-x-4 p-4 bg-gray-900/50 rounded-lg border border-gray-600">
                                                                         <img
                                                                             src={stage.image}
@@ -826,7 +959,8 @@ const ConversationPanel = ({
                                                                 ))}
                                                             </div>
                                                         </div>
-                                                    )}
+                                                              )}
+
 
                                                     {/* 3. Interactive List Module */}
                                                     {message.richContent?.interactiveList && (
@@ -836,52 +970,63 @@ const ConversationPanel = ({
                                                                 {message.richContent.interactiveList.title}
                                                             </h3>
                                                             <div className="space-y-4">
-                                                                {message.richContent.interactiveList.areas.map((area) => (
-                                                                    <div key={area.id} className="flex space-x-4 p-4 bg-gray-900/50 rounded-lg border border-gray-600 hover:border-green-500 transition-colors cursor-pointer">
-                                                                        <img
-                                                                            src={area.image}
-                                                                            alt={area.title}
-                                                                            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                                                                        />
-                                                                        <div className="flex-1">
-                                                                            <h4 className="text-lg font-semibold text-white mb-1">{area.title}</h4>
-                                                                            <p className="text-gray-300 text-sm">{area.description}</p>
+                                                                {message.richContent.interactiveList.areas && message.richContent.interactiveList.areas.map((area) => (
+                                                                    <React.Fragment key={area.id}>
+                                                                        <div className="flex space-x-4 p-4 bg-gray-900/50 rounded-lg border border-gray-600 hover:border-green-500 transition-colors cursor-pointer">
+                                                                            <img
+                                                                                src={area.image}
+                                                                                alt={area.title}
+                                                                                className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                                                                            />
+                                                                            <div className="flex-1">
+                                                                                <h4 className="text-lg font-semibold text-white mb-1">{area.title}</h4>
+                                                                                <p className="text-gray-300 text-sm">{area.description}</p>
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
+                                                                        {area.title === 'Cấu trúc dữ liệu & Thuật toán' && message.richContent?.video && (
+                                                                            <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700 my-4">
+                                                                                <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                                                                                    <PlayCircle className="w-6 h-6 mr-3 text-red-400" />
+                                                                                    {message.richContent.video.title}
+                                                                                </h3>
+                                                                                <div className="relative aspect-video rounded-lg overflow-hidden">
+                                                                                    {playingVideo === message.id ? (
+                                                                                        <iframe
+                                                                                            src={`https://www.youtube.com/embed/${message.richContent.video.videoId}?autoplay=1`}
+                                                                                            title={message.richContent.video.title}
+                                                                                            frameBorder="0"
+                                                                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                                                            allowFullScreen
+                                                                                            className="w-full h-full"
+                                                                                        ></iframe>
+                                                                                    ) : (
+                                                                                        <div className="cursor-pointer group" onClick={() => setPlayingVideo(message.id)}>
+                                                                                            <img
+                                                                                                src={message.richContent.video.thumbnail}
+                                                                                                alt={message.richContent.video.title}
+                                                                                                className="w-full h-full object-cover"
+                                                                                            />
+                                                                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                                                                                <Play className="w-16 h-16 text-white/80 group-hover:text-white group-hover:scale-110 transition-transform" />
+                                                                                            </div>
+                                                                                            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                                                                                                {message.richContent.video.duration}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className="mt-3 text-sm text-gray-400">
+                                                                                    Kênh: <span className="font-medium text-gray-300">{message.richContent.video.channel}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </React.Fragment>
                                                                 ))}
                                                             </div>
                                                         </div>
                                                     )}
 
-                                                    {/* 4. Stop & Think Module */}
-                                                    {message.richContent?.stopAndThink && (
-                                                        <div className="bg-cyan-900/20 border border-cyan-700/50 rounded-lg p-6">
-                                                            <h3 className="text-lg font-semibold text-cyan-300 mb-4 flex items-center">
-                                                                <Lightbulb className="w-5 h-5 mr-2" />
-                                                                Stop & think
-                                                            </h3>
-                                                            <p className="text-gray-300 mb-4">{message.richContent.stopAndThink.question}</p>
-                                                            <div className="bg-cyan-800/20 rounded-lg p-4 border border-cyan-600/30">
-                                                                <p className="text-cyan-200 font-medium mb-3">
-                                                                    {message.richContent.stopAndThink.thoughtQuestion}
-                                                                </p>
-                                                                <button
-                                                                    onClick={() => setExpandedHint(expandedHint === message.id ? null : message.id)}
-                                                                    className="flex items-center px-4 py-2 bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 rounded-lg transition-colors border border-cyan-500/30"
-                                                                >
-                                                                    <Eye className="w-4 h-4 mr-2" />
-                                                                    Nhấn để xem gợi ý
-                                                                </button>
-                                                                {expandedHint === message.id && (
-                                                                    <div className="mt-4 p-4 bg-cyan-700/20 rounded-lg border border-cyan-500/30">
-                                                                        <p className="text-cyan-100 text-sm leading-relaxed">
-                                                                            {message.richContent.stopAndThink.hint}
-                                                                        </p>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    )}
+
 
                                                     {/* 5. Phần Khám phá (Exploration Section) */}
                                                     {message.richContent?.exploration && (
@@ -909,49 +1054,17 @@ const ConversationPanel = ({
                                                     )}
                                                 </div>
 
-                                                {/* Action Buttons */}
-                                                <div className="flex flex-wrap gap-3">
-                                                    <button
-                                                        onClick={() => handleLearningPathAction('simplify')}
-                                                        className="flex items-center px-4 py-2 bg-gray-700 hover:bg-green-600 text-white rounded-lg transition-colors border border-gray-600"
-                                                    >
-                                                        <Minus className="w-4 h-4 mr-2" />
-                                                        Đơn giản
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleLearningPathAction('goDeeper')}
-                                                        className="flex items-center px-4 py-2 bg-gray-700 hover:bg-blue-600 text-white rounded-lg transition-colors border border-gray-600"
-                                                    >
-                                                        <MoreHorizontal className="w-4 h-4 mr-2" />
-                                                        Tìm hiểu sâu hơn
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleLearningPathAction('getImages')}
-                                                        className="flex items-center px-4 py-2 bg-gray-700 hover:bg-purple-600 text-white rounded-lg transition-colors border border-gray-600"
-                                                    >
-                                                        <ImageIcon className="w-4 h-4 mr-2" />
-                                                        Lấy hình ảnh
-                                                    </button>
-                                                    <button className="flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors border border-gray-600">
-                                                        <ThumbsUp className="w-4 h-4 mr-2" />
-                                                    </button>
-                                                    <button className="flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors border border-gray-600">
-                                                        <ThumbsDown className="w-4 h-4 mr-2" />
-                                                    </button>
-                                                    <button className="flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors border border-gray-600">
-                                                        <Share2 className="w-4 h-4 mr-2" />
-                                                    </button>
-                                                </div>
 
 
 
 
 
 
+
+                                                {/* Bot Message Toolbar */}
+                                                <BotMessageToolbar onAction={handleLearningPathAction} />
                                             </div>
                                         )}
-
-
 
                                         {/* Learning Path Action Response */}
                                         {message.type === 'ai' && message.isLearningPathActionResponse && message.richContent && (
@@ -1072,53 +1185,77 @@ const ConversationPanel = ({
                                                         </div>
                                                     )}
 
-                                                    {/* Persistent Action Buttons */}
-                                                    {message.richContent.learningPathActions && (
-                                                        <div className="mt-6 pt-6 border-t border-gray-600">
-                                                            <h5 className="text-lg font-semibold text-white mb-4">Tùy chọn khác</h5>
-                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                                {Object.entries(message.richContent.learningPathActions).map(([key, action]) => (
-                                                                    <button
-                                                                        key={key}
-                                                                        onClick={() => handleLearningPathAction(key)}
-                                                                        className={`p-4 rounded-xl border-2 transition-all duration-200 text-left group ${
-                                                                            action.color === 'green' ? 'bg-green-900/20 border-green-500/30 hover:bg-green-900/30' :
-                                                                            action.color === 'blue' ? 'bg-blue-900/20 border-blue-500/30 hover:bg-blue-900/30' :
-                                                                            'bg-purple-900/20 border-purple-500/30 hover:bg-purple-900/30'
-                                                                        }`}
-                                                                    >
-                                                                        <div className="flex items-start gap-3">
-                                                                            <div className={`group-hover:scale-110 transition-transform ${
-                                                                                action.color === 'green' ? 'text-green-400' :
-                                                                                action.color === 'blue' ? 'text-blue-400' :
-                                                                                'text-purple-400'
-                                                                            }`}>
-                                                                                {key === 'simplify' && <Lightbulb className="w-5 h-5" />}
-                                                                                {key === 'goDeeper' && <BookOpen className="w-5 h-5" />}
-                                                                                {key === 'getImages' && <ImageIcon className="w-5 h-5" />}
-                                                                            </div>
-                                                                            <div className="flex-1">
-                                                                                <h5 className={`font-semibold mb-1 ${
-                                                                                    action.color === 'green' ? 'text-green-300' :
-                                                                                    action.color === 'blue' ? 'text-blue-300' :
-                                                                                    'text-purple-300'
-                                                                                }`}>
-                                                                                    {action.title}
-                                                                                </h5>
-                                                                                <p className="text-sm text-gray-400">{action.description}</p>
-                                                                            </div>
-                                                                            <ChevronRight className={`w-4 h-4 group-hover:translate-x-1 transition-transform ${
-                                                                                action.color === 'green' ? 'text-green-400' :
-                                                                                action.color === 'blue' ? 'text-blue-400' :
-                                                                                'text-purple-400'
-                                                                            }`} />
+                                                    {/* Bot Message Toolbar */}
+                                                    <BotMessageToolbar onAction={handleLearningPathAction} />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Toolbar Response Messages */}
+                                        {message.type === 'ai' && message.isToolbarResponse && message.richContent && (
+                                            <div className="space-y-6">
+                                                <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+                                                    <h4 className="text-xl font-semibold text-white mb-4">
+                                                        {message.richContent.answer}
+                                                    </h4>
+                                                    <p className="text-gray-300 leading-relaxed mb-4">
+                                                        {message.richContent.mainContent}
+                                                    </p>
+
+                                                    {/* Key Points for Simplify */}
+                                                    {message.actionType === 'simplify' && message.richContent.keyPoints && (
+                                                        <div className="space-y-2">
+                                                            <h5 className="text-lg font-semibold text-white mb-3">Điểm chính:</h5>
+                                                            <ul className="space-y-2">
+                                                                {message.richContent.keyPoints.map((point, index) => (
+                                                                    <li key={index} className="flex items-start gap-3">
+                                                                        <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                                                                        <span className="text-gray-300">{point}</span>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Advanced Topics for Go Deeper */}
+                                                    {message.actionType === 'goDeeper' && message.richContent.advancedTopics && (
+                                                        <div className="space-y-2">
+                                                            <h5 className="text-lg font-semibold text-white mb-3">Chủ đề nâng cao:</h5>
+                                                            <ul className="space-y-2">
+                                                                {message.richContent.advancedTopics.map((topic, index) => (
+                                                                    <li key={index} className="flex items-start gap-3">
+                                                                        <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                                                                        <span className="text-gray-300">{topic}</span>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Images for Get Images */}
+                                                    {message.actionType === 'getImages' && message.richContent.images && (
+                                                        <div className="space-y-4">
+                                                            <h5 className="text-lg font-semibold text-white mb-3">Hình ảnh minh họa:</h5>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                {message.richContent.images.map((image, index) => (
+                                                                    <div key={index} className="bg-gray-800/50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow border border-gray-700">
+                                                                        <img
+                                                                            src={image.src}
+                                                                            alt={image.caption}
+                                                                            className="w-full h-48 object-cover"
+                                                                        />
+                                                                        <div className="p-4">
+                                                                            <p className="text-sm text-gray-300">{image.caption}</p>
                                                                         </div>
-                                                                    </button>
+                                                                    </div>
                                                                 ))}
                                                             </div>
                                                         </div>
                                                     )}
                                                 </div>
+
+                                                {/* Bot Message Toolbar */}
+                                                <BotMessageToolbar onAction={handleLearningPathAction} />
                                             </div>
                                         )}
 
@@ -1159,33 +1296,7 @@ const ConversationPanel = ({
                                                         </div>
                                                     )}
 
-                                                    {/* Video */}
-                                                    {message.richContent.video && (
-                                                        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
-                                                            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
-                                                                <Play className="w-5 h-5" />
-                                                                Video liên quan
-                                                            </h4>
-                                                            <div className="relative">
-                                                                <img
-                                                                    src={message.richContent.video.thumbnail}
-                                                                    alt={message.richContent.video.title}
-                                                                    className="w-full h-40 object-cover rounded-lg"
-                                                                />
-                                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                                    <div className="bg-red-600 text-white px-4 py-2 rounded-full flex items-center gap-2">
-                                                                        <Play className="w-4 h-4" />
-                                                                        {message.richContent.video.duration}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <h5 className="text-white font-medium mt-3">{message.richContent.video.title}</h5>
-                                                            <button className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1 mt-2">
-                                                                <ExternalLink className="w-3 h-3" />
-                                                                Xem video
-                                                            </button>
-                                                        </div>
-                                                    )}
+
                                                 </div>
                                             </div>
                                         )}
@@ -1254,7 +1365,7 @@ const ConversationPanel = ({
                 )}
 
                 <div ref={messagesEndRef} />
-            </div>
+            </div></div></div>
 
             {/* Input */}
             <div className="p-4 border-t border-gray-700">
