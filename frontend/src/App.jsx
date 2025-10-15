@@ -269,7 +269,7 @@ function App() {
       ) : (
         <>
           {/* Header - Unified Design */}
-          <div className="sticky top-0 z-50 bg-gray-800/95 backdrop-blur-sm border-b border-gray-700 px-6 py-4">
+          <div className="fixed top-0 left-0 right-0 z-50 bg-gray-800/95 backdrop-blur-sm border-b border-gray-700 px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* Hamburger Menu for Conversation Sidebar */}
@@ -326,7 +326,7 @@ function App() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 flex relative">
+          <div className="flex-1 flex relative pt-16">
 
 
             {/* Conversation History Sidebar - Overlay */}
@@ -341,11 +341,10 @@ function App() {
             />
 
             {/* Main Content Wrapper */}
-            <main className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 flex overflow-hidden">
               <div className="flex-1 flex overflow-hidden">
 
-
-                {/* Center Panel - Conversation */}
+                {/* Center Panel - Conversation - It will handle its own scrolling */}
                 <div className="flex-1 flex flex-col bg-gray-900 h-full">
                   <ConversationPanel
                     source={activeSource}
@@ -364,9 +363,10 @@ function App() {
                     currentConversation={conversationsMeta.find(c => c.id === activeConversationId)}
                     onUpdateConversationTitle={handleUpdateConversationTitle}
                     onAutoCreateNewChat={handleAutoCreateNewChat}
+                    isStudioOpen={isStudioOpen}
                   />
                 </div>
-                {/* Right Panel - Studio */}
+                {/* Right Panel - Studio - Fixed position */}
                 <AnimatePresence>
                   {isStudioOpen ? (
                     <motion.div
@@ -374,7 +374,8 @@ function App() {
                       animate={{ x: 0 }}
                       exit={{ x: 400 }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      className="w-96 bg-gray-800 border-l border-gray-700 flex flex-col h-full"
+                      className="w-96 bg-gray-800 border-l border-gray-700 flex flex-col h-screen fixed right-0 z-30"
+                      style={{ top: '65px' }}
                     >
                       {activeRightTab === 'studio' && (
                         <StudioPanel

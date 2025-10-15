@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 import { searchFAQs } from '../api/faqApi';
 import { updateConversation } from '../api/conversationApi';
-import TheBigPicture from './TheBigPicture';
+
 import BotMessageToolbar from './BotMessageToolbar';
 
 
@@ -55,6 +55,7 @@ const ConversationPanel = ({
     currentConversation = null,
     onUpdateConversationTitle = null,
     onAutoCreateNewChat = null,
+    isStudioOpen = true,
 }) => {
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -852,23 +853,10 @@ const ConversationPanel = ({
 
     return (
         <div className="flex flex-col h-full bg-gray-900">
-            {/* Two-column Layout */}
-            <div className="flex flex-1 overflow-hidden h-full">
-                {/* Left Column: Suggestions - Fixed position */}
-                <div className="w-3/10 flex flex-col h-full overflow-hidden">
-                    <div className="flex-1 overflow-y-auto p-4">
-                        <TheBigPicture
-                            onSuggestionClick={(question) => {
-                                setInputMessage(question);
-                                handleSendMessageWithContent(question);
-                            }}
-                        />
-                    </div>
-                </div>
 
-                {/* Right Column: Chat Stream */}
-                <div className="w-7/10 flex flex-col h-full overflow-hidden">
-                    <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+
+            {/* Scrollable Chat Content */}
+<div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4" style={{ paddingBottom: '100px', marginRight: isStudioOpen ? '384px' : '64px' }}>
 
 
 
@@ -1467,10 +1455,10 @@ const ConversationPanel = ({
                 )}
 
                 <div ref={messagesEndRef} />
-            </div></div></div>
+            </div>
 
-            {/* Input */}
-            <div className="p-4 border-t border-gray-700">
+            {/* Fixed Input Area at Bottom */}
+            <div className="fixed bottom-0 left-0 z-20 bg-gray-900 border-t border-gray-700 p-4" style={{ right: isStudioOpen ? '384px' : '64px' }}>
                 <div className="bg-gray-800 border border-gray-700 rounded-lg p-2">
                     {attachment && (
                         <div className="mb-2">
