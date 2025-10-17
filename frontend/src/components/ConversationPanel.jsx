@@ -829,7 +829,7 @@ Hiểu rõ những khái niệm này giúp đưa ra quyết định sáng suốt
 
                 {/* Input Area - Auto-create chat on send */}
                 <div className="p-4 border-t border-gray-700">
-                    <div style={{backgroundColor: '#2C303D'}} className="border border-gray-700 rounded-lg p-2">
+                    <div style={{backgroundColor: '#282A2C'}} className="border border-gray-700 rounded-lg p-2">
                         {attachment && (
                             <div className="mb-2">
                                 <div className="inline-flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2">
@@ -853,7 +853,7 @@ Hiểu rõ những khái niệm này giúp đưa ra quyết định sáng suốt
                             <button
                                 onClick={() => fileInputRef.current?.click()}
                                 className="p-2 text-gray-400 hover:text-white rounded-lg transition-colors"
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#2C303D'}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#282A2C'}
                             onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                                 title="Tải file lên"
                             >
@@ -1485,7 +1485,7 @@ Hiểu rõ những khái niệm này giúp đưa ra quyết định sáng suốt
 
             {/* Fixed Input Area at Bottom */}
             <div className="fixed bottom-0 left-0 z-20 bg-hannah-dark border-t border-gray-700 p-4" style={{ right: isStudioOpen ? '384px' : '64px' }}>
-                <div style={{backgroundColor: '#2C303D'}} className="border border-gray-700 rounded-lg p-2">
+                <div style={{backgroundColor: '#282A2C'}} className="border border-gray-700 rounded-lg p-2">
                     {attachment && (
                         <div className="mb-2">
                             <div className="inline-flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2">
@@ -1509,7 +1509,7 @@ Hiểu rõ những khái niệm này giúp đưa ra quyết định sáng suốt
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             className="p-2 text-gray-400 hover:text-white rounded-lg transition-colors"
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#2C303D'}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#282A2C'}
                             onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                             title="Tải file lên"
                         >

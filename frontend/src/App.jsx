@@ -430,7 +430,8 @@ function App() {
                       animate={{ x: 0, opacity: 1 }}
                       exit={{ x: 80, opacity: 0 }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      className="w-16 bg-gray-800 border-l border-gray-700 flex flex-col items-center py-3 gap-4 fixed right-0 h-screen z-30"
+                      className="w-16 border-l border-gray-700 flex flex-col items-center py-3 gap-4 fixed right-0 h-screen z-30"
+                      style={{ backgroundColor: '#282A2C', top: '64px' }}
                       style={{ top: '64px' }}
                     >
                       <button
@@ -486,12 +487,7 @@ function App() {
 
           </div>
 
-          {/* Footer */}
-          <div className="bg-gray-800 border-t border-gray-700 px-6 py-2">
-            <p className="text-xs text-gray-400">
-              Hannah Learn About có thể đưa ra thông tin không chính xác; hãy kiểm tra kỹ câu trả lời mà bạn nhận được.
-            </p>
-          </div>
+
 
           {/* Setup Guide Modal */}
           <SetupGuide

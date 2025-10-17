@@ -432,7 +432,7 @@ const StudioPanel = ({ source, onTogglePanel }) => {
   };
 
   return (
-    <div className="flex flex-col h-full" style={{backgroundColor: '#2C303D'}}>
+    <div className="flex flex-col h-full" style={{backgroundColor: '#282A2C'}}>
       {/* Header */}
       <div className="p-4 border-b border-gray-700">
         <div className="flex items-center justify-between">
