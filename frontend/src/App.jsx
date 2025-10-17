@@ -279,7 +279,7 @@ function App() {
   }
 
   return (
-    <div className="h-screen bg-gray-900 flex flex-col">
+    <div className="h-screen bg-hannah-dark flex flex-col">
       {currentPage === 'home' ? (
         <HomePage
           onNavigateToMain={handleNavigateToMain}
@@ -293,7 +293,7 @@ function App() {
       ) : (
         <>
           {/* Header - Unified Design */}
-          <div className="fixed top-0 left-0 right-0 z-50 bg-gray-800/95 backdrop-blur-sm border-b border-gray-700 px-6 py-4">
+          <div className="fixed top-0 left-0 right-0 z-50 bg-hannah-dark border-b border-gray-700 px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* Hamburger Menu for Conversation Sidebar */}
@@ -369,7 +369,7 @@ function App() {
               <div className="flex-1 flex overflow-hidden" style={{ marginRight: isStudioOpen ? '384px' : '64px' }}>
 
                 {/* Center Panel - Conversation - It will handle its own scrolling */}
-                <div className="flex-1 flex flex-col bg-gray-900 h-full">
+                <div className="flex-1 flex flex-col bg-hannah-dark h-full">
                   <ConversationPanel
                     source={activeSource}
                     conversations={conversations}

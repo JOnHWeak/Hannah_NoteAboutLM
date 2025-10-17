@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Calendar, Plus, X, Loader2, Menu, MessageSquare } from 'lucide-react';
-import BrandLogo from './BrandLogo';
+import { Trash2, Calendar, Plus, X, Loader2, MessageSquare } from 'lucide-react';
 
 const ConversationHistorySidebar = ({
   isOpen,
-  onClose,
   conversations = [],
   activeConversationId,
   onSelectConversation,
@@ -14,18 +12,6 @@ const ConversationHistorySidebar = ({
 }) => {
   const [deletingIds, setDeletingIds] = useState(new Set());
   const [isCreating, setIsCreating] = useState(false);
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 1) return 'Hôm nay';
-    if (diffDays === 2) return 'Hôm qua';
-    if (diffDays <= 7) return `${diffDays - 1} ngày trước`;
-
-    return date.toLocaleDateString('vi-VN');
-  };
 
   const handleDeleteConversation = async (conversationId, e) => {
     e.stopPropagation();
@@ -58,40 +44,36 @@ const ConversationHistorySidebar = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black/50 z-30"
-            onClick={onClose}
-          />
-          <motion.div
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed top-0 left-0 w-80 bg-gray-800 border-r border-gray-700 flex flex-col z-40"
-            style={{ height: '100vh', paddingTop: '5rem' }}
+        <motion.div
+          initial={{ x: '-100%' }}
+          animate={{ x: 0 }}
+          exit={{ x: '-100%' }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className="fixed left-0 w-80 flex flex-col z-40"
+            style={{
+              top: '68px',
+              height: 'calc(100vh - 68px)',
+              backgroundColor: '#1F1F1F'
+            }}
           >
             <div className="p-4">
               <button
                 onClick={handleStartNewConversation}
                 disabled={isCreating}
-                className="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors border border-gray-600"
+                className="w-full flex items-center justify-center gap-2 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors border border-gray-600"
+                style={{ backgroundColor: '#2C303D' }}
               >
                 {isCreating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Plus className="w-4 h-4" />
                 )}
-                New chat
+                Tạo mới
               </button>
             </div>
 
             <div className="px-4 pb-2">
-              <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wide">History</h3>
+              <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wide">Lịch sử</h3>
             </div>
 
             <div className="flex-1 overflow-y-auto px-2">
@@ -131,8 +113,7 @@ const ConversationHistorySidebar = ({
                 </motion.div>
               ))}
             </div>
-          </motion.div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   );

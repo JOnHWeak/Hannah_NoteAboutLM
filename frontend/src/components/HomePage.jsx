@@ -116,16 +116,16 @@ const HomePage = ({
 
 
     return (
-        <div className="min-h-screen scroll-smooth">
+        <div className="min-h-screen scroll-smooth bg-hannah-dark">
             {/* Header */}
-            <header className="sticky top-0 z-50 flex items-center justify-between p-6 bg-gray-800/95 backdrop-blur-sm border-b border-gray-700">
+            <header className={`sticky top-0 z-50 flex items-center justify-between p-6 bg-hannah-dark transition-all duration-300 ${isSidebarOpen ? 'opacity-50' : 'opacity-100'}`}>
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => {
                             if (!isAuthenticated) {
                                 setModalView('login');
                             } else {
-                                setIsSidebarOpen(true);
+                                setIsSidebarOpen(!isSidebarOpen);
                             }
                         }}
                         className="text-gray-300 hover:text-white transition-colors"
@@ -169,7 +169,7 @@ const HomePage = ({
 
                     {/* Search Input */}
                     <div className="relative max-w-2xl mx-auto mb-8">
-                        <div className="flex items-center bg-gray-800 rounded-full px-6 py-4 border border-gray-600 hover:border-gray-500 transition-colors shadow-sm">
+                        <div className="flex items-center bg-hannah-input-bg rounded-full px-6 py-4 border border-gray-600 hover:border-gray-500 transition-colors shadow-sm">
                             <input
                                 type="text"
                                 value={searchQuery}
@@ -225,9 +225,9 @@ const HomePage = ({
             <section className="px-6 py-16">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-12">
-                        <h2 className="text-4xl font-bold text-white mb-6">
+                        {/* <h2 className="text-4xl font-bold text-white mb-6">
                             Khám Phá
-                        </h2>
+                        </h2> */}
                         {/* <p className="text-gray-300 text-xl leading-relaxed">
                             Nhận câu trả lời ngay lập tức về lộ trình học lập trình và công nghệ kỹ thuật phần mềm
                         </p> */}
@@ -276,11 +276,18 @@ const HomePage = ({
                 </div>
             </section>
 
+            {/* Overlay for Sidebar */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 z-40 top-[68px]"
+                    onClick={() => setIsSidebarOpen(false)}
+                ></div>
+            )}
+
             {/* Conversation History Sidebar */}
             {isAuthenticated && (
                 <ConversationHistorySidebar
                     isOpen={isSidebarOpen}
-                    onClose={() => setIsSidebarOpen(false)}
                     conversations={conversationsMeta || []}
                     activeConversationId={activeConversationId}
                     onSelectConversation={handleSelectConversation}
