@@ -39,6 +39,7 @@ import { searchFAQs } from '../api/faqApi';
 import { updateConversation } from '../api/conversationApi';
 
 import BotMessageToolbar from './BotMessageToolbar';
+import StructuredAnswer from './StructuredAnswer';
 
 
 
@@ -245,7 +246,7 @@ const ConversationPanel = ({
             // Case 1: Simplify button clicked
             baseResponse.richContent = {
                 // Introduction section for Simplify
-                introduction: `Hãy đơn giản hóa ${topicName}. ${content.answer || content.mainContent || `${topicName} là một lĩnh vực quan trọng trong công nghệ thông tin. Chúng ta sẽ tìm hiểu những điều cơ bản và quan trọng nhất để bạn có thể bắt đầu học một cách dễ dàng.`}`,
+                introduction: `Để đơn giản hóa chủ đề **${topicName}**, hãy tập trung vào các khái niệm cốt lõi. Dưới đây là phần trình bày các nguyên tắc cơ bản và những điểm chính yếu, giúp bạn xây dựng một nền tảng kiến thức vững chắc một cách nhanh chóng.`,
 
                 // Interactive Timeline with slightly more detailed data
                 interactiveTimeline: {
@@ -316,7 +317,7 @@ const ConversationPanel = ({
             // Case 2: Learn More button clicked
             baseResponse.richContent = {
                 // Introduction section for Learn More
-                introduction: `Hãy tìm hiểu sâu hơn về ${topicName}. ${content.answer || content.mainContent || `${topicName} có nhiều khía cạnh phức tạp và thú vị. Chúng ta sẽ khám phá các khái niệm nâng cao và ứng dụng thực tế trong ngành công nghiệp.`}`,
+                introduction: `Để khám phá sâu hơn về **${topicName}**, chúng ta sẽ phân tích các khía cạnh chuyên sâu và các ứng dụng thực tiễn trong ngành. Phần trình bày này sẽ bao gồm các khái niệm nâng cao, các trường hợp sử dụng phức tạp và những kỹ thuật liên quan.`,
 
                 // Terminology Table (replaces interactive timeline)
                terminologyTable: {
@@ -388,7 +389,7 @@ const ConversationPanel = ({
             // Case 3: Get Images button clicked
             baseResponse.richContent = {
                 // Introduction for Get Images
-                introduction: `Đây là một số hình ảnh minh họa và video liên quan đến ${topicName} để giúp bạn hiểu rõ hơn.`,
+                introduction: `Để cung cấp một góc nhìn trực quan hơn về **${topicName}**, dưới đây là một bộ sưu tập các hình ảnh, sơ đồ và video minh họa. Những tài nguyên này được thiết kế để làm rõ các khái niệm phức tạp và cung cấp bối cảnh thực tế.`,
 
                 // Image Gallery component
                 imageGallery: {
@@ -446,7 +447,14 @@ const ConversationPanel = ({
             // Default behavior - existing format but remove Related Videos, replace with different component
             baseResponse.richContent = {
                 // 1. Phần Mở đầu (Introduction Section)
-                introduction: content.answer || content.mainContent || `${topicName} là một lĩnh vực quan trọng trong công nghệ thông tin, đòi hỏi sự kết hợp giữa kiến thức lý thuyết vững chắc và kỹ năng thực hành. Việc hiểu rõ về chủ đề này sẽ giúp bạn xây dựng nền tảng vững chắc cho sự nghiệp trong lĩnh vực công nghệ.`,
+                introduction: content.answer || content.mainContent || `**${topicName}** đại diện cho một lĩnh vực then chốt trong công nghệ thông tin hiện đại. Chủ đề này đòi hỏi sự tích hợp giữa kiến thức lý thuyết sâu sắc và kỹ năng ứng dụng thực tiễn.
+
+**Tại sao điều này quan trọng:**
+- Tạo nền tảng vững chắc cho sự phát triển nghề nghiệp
+- Cung cấp khung tư duy để giải quyết các vấn đề phức tạp
+- Mở ra cơ hội nghề nghiệp trong các lĩnh vực công nghệ tiên tiến
+
+Hãy cùng khám phá các khía cạnh quan trọng của chủ đề này một cách có hệ thống.`,
 
                 // 2. Interactive Timeline Module
                 interactiveTimeline: {
@@ -592,13 +600,23 @@ const ConversationPanel = ({
             return generateUnifiedResponse({
                 question: question,
                 answer: faqMatch.detailedAnswer || faqMatch.answer,
-                mainContent: `Đây là câu trả lời toàn diện về ${faqMatch.category?.toLowerCase() || 'chủ đề này'}. ${faqMatch.detailedAnswer || faqMatch.answer}`,
-                whyItMatters: `Hiểu rõ về ${faqMatch.category?.toLowerCase() || 'chủ đề này'} là rất quan trọng cho hành trình lập trình của bạn vì nó tạo nền tảng để xây dựng các ứng dụng mạnh mẽ, có thể mở rộng và thúc đẩy sự nghiệp phát triển phần mềm của bạn.`,
+                mainContent: `**Câu trả lời chuyên sâu về ${faqMatch.category || 'chủ đề này'}:**
+
+${faqMatch.detailedAnswer || faqMatch.answer}
+
+**Phân tích bổ sung:**
+Đây là một khía cạnh quan trọng trong hệ sinh thái công nghệ hiện đại, đòi hỏi sự hiểu biết sâu sắc để ứng dụng hiệu quả trong thực tiễn.`,
+                whyItMatters: `**Tầm quan trọng của ${faqMatch.category?.toLowerCase() || 'chủ đề này'}:**
+
+- **Nền tảng nghề nghiệp:** Tạo cơ sở vững chắc cho sự phát triển trong lĩnh vực công nghệ
+- **Ứng dụng thực tiễn:** Cung cấp kỹ năng cần thiết để xây dựng các giải pháp có thể mở rộng
+- **Cạnh tranh nghề nghiệp:** Nâng cao khả năng cạnh tranh trong thị trường lao động công nghệ
+- **Tư duy hệ thống:** Phát triển khả năng phân tích và giải quyết vấn đề phức tạp`,
                 suggestedQuestions: faqMatch.relatedQuestions || [
-                    'Bạn có thể cung cấp ví dụ cụ thể hơn không?',
-                    'Các phương pháp tốt nhất cho điều này là gì?',
-                    'Thường mất bao lâu để học điều này?',
-                    'Bạn có đề xuất tài nguyên nào để học thêm không?'
+                    'Có thể cung cấp các ví dụ thực tiễn và case study cụ thể?',
+                    'Các best practices và phương pháp tiên tiến nhất hiện tại là gì?',
+                    'Lộ trình học tập và thời gian cần thiết để thành thạo?',
+                    'Tài nguyên học tập chất lượng cao và các khóa học chuyên sâu nào được khuyến nghị?'
                 ]
             }, 'faq', faqMatch);
         }
@@ -607,15 +625,40 @@ const ConversationPanel = ({
         return generateUnifiedResponse({
             question: question,
             answer: source ?
-                `Dựa trên nội dung từ "${source.title}", đây là câu trả lời chi tiết cho câu hỏi của bạn về "${question}".` :
-                `Đây là câu trả lời chi tiết cho câu hỏi của bạn về "${question}".`,
-            mainContent: `Trong chủ đề này, chúng ta có thể thấy rằng có nhiều khía cạnh quan trọng cần được phân tích. Đây là một chủ đề phức tạp với nhiều yếu tố tương tác với nhau.`,
-            whyItMatters: `Điều này quan trọng vì nó ảnh hưởng trực tiếp đến cách chúng ta hiểu và áp dụng kiến thức trong thực tế. Hiểu rõ khái niệm này giúp chúng ta đưa ra quyết định tốt hơn.`,
+                `**Phân tích dựa trên nguồn "${source.title}":**
+
+Dưới đây là câu trả lời toàn diện cho câu hỏi: *"${question}"*
+
+**Nội dung chính:**
+Chủ đề này bao gồm nhiều khía cạnh quan trọng cần được phân tích một cách có hệ thống để hiểu rõ bản chất và ứng dụng thực tiễn.` :
+                `**Câu trả lời chuyên sâu:**
+
+Đối với câu hỏi: *"${question}"*
+
+**Phân tích tổng quan:**
+Đây là một chủ đề đa chiều với nhiều yếu tố tương tác, đòi hỏi cách tiếp cận có hệ thống để nắm bắt đầy đủ các khía cạnh quan trọng.`,
+            mainContent: `**Các khía cạnh cần xem xét:**
+
+1. **Khung lý thuyết:** Nền tảng khái niệm và các nguyên tắc cơ bản
+2. **Ứng dụng thực tiễn:** Cách áp dụng trong các tình huống cụ thể
+3. **Xu hướng phát triển:** Các hướng tiến triển và cập nhật mới nhất
+4. **Thách thức và giải pháp:** Những vấn đề thường gặp và cách xử lý
+
+**Phương pháp tiếp cận:**
+Để hiểu sâu về chủ đề này, cần kết hợp giữa kiến thức lý thuyết và kinh nghiệm thực hành, đồng thời cập nhật liên tục các xu hướng mới.`,
+            whyItMatters: `**Tầm quan trọng và ý nghĩa:**
+
+- **Phát triển chuyên môn:** Nâng cao năng lực và kiến thức chuyên ngành
+- **Ứng dụng thực tế:** Cung cấp công cụ để giải quyết các vấn đề thực tiễn
+- **Tư duy phản biện:** Phát triển khả năng phân tích và đánh giá
+- **Cạnh tranh nghề nghiệp:** Tạo lợi thế trong môi trường làm việc hiện đại
+
+Hiểu rõ những khái niệm này giúp đưa ra quyết định sáng suốt và xây dựng giải pháp hiệu quả.`,
             suggestedQuestions: [
-                'Có thể giải thích thêm về phần nào đó không?',
-                'Có ví dụ cụ thể nào khác không?',
-                'Làm thế nào để áp dụng điều này trong thực tế?',
-                'Có tài liệu tham khảo nào khác không?'
+                'Có thể phân tích chi tiết hơn về các khía cạnh kỹ thuật?',
+                'Các case study và ví dụ thực tiễn trong ngành là gì?',
+                'Phương pháp triển khai và best practices trong môi trường production?',
+                'Tài nguyên chuyên sâu và các nghiên cứu mới nhất về chủ đề này?'
             ]
         }, 'general');
     };
@@ -896,11 +939,7 @@ const ConversationPanel = ({
                                                 )}
 
                                                 {/* 1. Phần Mở đầu (Introduction Section) */}
-                                                <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-                                                    <p className="text-gray-300 leading-relaxed text-lg">
-                                                        {message.richContent?.introduction || message.richContent?.answer}
-                                                    </p>
-                                                </div>
+                                                <StructuredAnswer content={message.richContent?.introduction || message.richContent?.answer} />
 
                                                 {/* Vertical Content Structure */}
                                                 <div className="space-y-8">
@@ -962,7 +1001,7 @@ const ConversationPanel = ({
                                                                                         <iframe
                                                                                             src={`https://www.youtube.com/embed/${message.richContent.video.videoId}?autoplay=1`}
                                                                                             title={message.richContent.video.title}
-                                                                                            frameBorder="0"
+                                                                                            style={{ border: 0 }}
                                                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                                                                             allowFullScreen
                                                                                             className="w-full h-full"
