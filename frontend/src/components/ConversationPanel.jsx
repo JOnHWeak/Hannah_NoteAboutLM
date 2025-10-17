@@ -813,7 +813,7 @@ Hiểu rõ những khái niệm này giúp đưa ra quyết định sáng suốt
     // Empty state - show when no conversation exists or no messages
     if ((!currentConversation && conversations.length === 0) || (!source && conversations.length === 0)) {
         return (
-            <div className="flex-1 flex flex-col bg-gray-900">
+            <div className="flex-1 flex flex-col bg-hannah-dark">
 
 
                 {/* Empty State */}
@@ -829,7 +829,7 @@ Hiểu rõ những khái niệm này giúp đưa ra quyết định sáng suốt
 
                 {/* Input Area - Auto-create chat on send */}
                 <div className="p-4 border-t border-gray-700">
-                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-2">
+                    <div style={{backgroundColor: '#2C303D'}} className="border border-gray-700 rounded-lg p-2">
                         {attachment && (
                             <div className="mb-2">
                                 <div className="inline-flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2">
@@ -852,7 +852,9 @@ Hiểu rõ những khái niệm này giúp đưa ra quyết định sáng suốt
                             />
                             <button
                                 onClick={() => fileInputRef.current?.click()}
-                                className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                                className="p-2 text-gray-400 hover:text-white rounded-lg transition-colors"
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#2C303D'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                                 title="Tải file lên"
                             >
                                 <Paperclip className="w-4 h-4" />
@@ -880,7 +882,7 @@ Hiểu rõ những khái niệm này giúp đưa ra quyết định sáng suốt
     }
 
     return (
-        <div className="flex flex-col h-full bg-gray-900">
+        <div className="flex flex-col h-full bg-hannah-dark">
 
 
             {/* Scrollable Chat Content */}
@@ -1482,8 +1484,8 @@ Hiểu rõ những khái niệm này giúp đưa ra quyết định sáng suốt
             </div>
 
             {/* Fixed Input Area at Bottom */}
-            <div className="fixed bottom-0 left-0 z-20 bg-gray-900 border-t border-gray-700 p-4" style={{ right: isStudioOpen ? '384px' : '64px' }}>
-                <div className="bg-gray-800 border border-gray-700 rounded-lg p-2">
+            <div className="fixed bottom-0 left-0 z-20 bg-hannah-dark border-t border-gray-700 p-4" style={{ right: isStudioOpen ? '384px' : '64px' }}>
+                <div style={{backgroundColor: '#2C303D'}} className="border border-gray-700 rounded-lg p-2">
                     {attachment && (
                         <div className="mb-2">
                             <div className="inline-flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2">
@@ -1506,7 +1508,9 @@ Hiểu rõ những khái niệm này giúp đưa ra quyết định sáng suốt
                         />
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                            className="p-2 text-gray-400 hover:text-white rounded-lg transition-colors"
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#2C303D'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                             title="Tải file lên"
                         >
                             <Paperclip className="w-4 h-4" />
