@@ -7,6 +7,7 @@ import ConversationHistorySidebar from './ConversationHistorySidebar';
 import UserMenu from './UserMenu';
 import LoginModal from './LoginModal';
 import { useAuth } from '../context/AuthContext';
+import BrandLogo from './BrandLogo';
 
 const HomePage = ({
   onNavigateToMain,
@@ -81,6 +82,13 @@ const HomePage = ({
         loadFAQs();
     }, []);
 
+    // Close sidebar if user logs out / not authenticated
+    useEffect(() => {
+        if (!isAuthenticated) {
+            setIsSidebarOpen(false);
+        }
+    }, [isAuthenticated]);
+
     // Handle FAQ card click - navigate to main app with the question
     const handleFAQClick = (faq) => {
         requireAuth(() => {
@@ -113,16 +121,19 @@ const HomePage = ({
             <header className="sticky top-0 z-50 flex items-center justify-between p-6 bg-gray-800/95 backdrop-blur-sm border-b border-gray-700">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => setIsSidebarOpen(true)}
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                setModalView('login');
+                            } else {
+                                setIsSidebarOpen(true);
+                            }
+                        }}
                         className="text-gray-300 hover:text-white transition-colors"
                     >
                         <Menu className="w-6 h-6" />
                     </button>
-                    <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-500 via-green-500 to-yellow-500 bg-clip-text text-transparent">
-                            Hannah
-                        </span>
-                        <span className="text-xl text-gray-300">Learn About</span>
+                    <div className="flex items-center">
+                        <BrandLogo size="md" />
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -266,15 +277,17 @@ const HomePage = ({
             </section>
 
             {/* Conversation History Sidebar */}
-            <ConversationHistorySidebar
-                isOpen={isSidebarOpen}
-                onClose={() => setIsSidebarOpen(false)}
-                conversations={conversationsMeta || []}
-                activeConversationId={activeConversationId}
-                onSelectConversation={handleSelectConversation}
-                onDeleteConversation={onDeleteConversation}
-                onStartNewConversation={handleStartNewConversation}
-            />
+            {isAuthenticated && (
+                <ConversationHistorySidebar
+                    isOpen={isSidebarOpen}
+                    onClose={() => setIsSidebarOpen(false)}
+                    conversations={conversationsMeta || []}
+                    activeConversationId={activeConversationId}
+                    onSelectConversation={handleSelectConversation}
+                    onDeleteConversation={onDeleteConversation}
+                    onStartNewConversation={handleStartNewConversation}
+                />
+            )}
             <LoginModal isOpen={!!modalView} initialView={modalView} onClose={() => setModalView(null)} />
         </div>
     );
