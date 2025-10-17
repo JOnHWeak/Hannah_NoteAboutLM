@@ -48,14 +48,15 @@ const ConversationHistorySidebar = ({
           initial={{ x: '-100%' }}
           animate={{ x: 0 }}
           exit={{ x: '-100%' }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed left-0 w-80 flex flex-col z-40"
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          className="fixed top-0 left-0 w-80 flex flex-col z-50 shadow-2xl h-full"
             style={{
-              top: '68px',
-              height: 'calc(100vh - 68px)',
               backgroundColor: '#1F1F1F'
             }}
           >
+            {/* Top spacing to avoid overlapping with header logo/menu */}
+            <div className="h-20"></div>
+
             <div className="p-4">
               <button
                 onClick={handleStartNewConversation}

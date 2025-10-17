@@ -118,8 +118,9 @@ const HomePage = ({
     return (
         <div className="min-h-screen scroll-smooth bg-hannah-dark">
             {/* Header */}
-            <header className={`sticky top-0 z-50 flex items-center justify-between p-6 bg-hannah-dark transition-all duration-300 ${isSidebarOpen ? 'opacity-50' : 'opacity-100'}`}>
-                <div className="flex items-center gap-4">
+            <header className="sticky top-0 z-30 flex items-center justify-between p-6 bg-hannah-dark">
+                {/* Left side - Logo and Menu - Always on top */}
+                <div className="relative z-60 flex items-center gap-4">
                     <button
                         onClick={() => {
                             if (!isAuthenticated) {
@@ -136,7 +137,9 @@ const HomePage = ({
                         <BrandLogo size="md" />
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
+
+                {/* Right side - User menu - Gets dimmed */}
+                <div className={`flex items-center gap-3 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-0' : 'opacity-100'}`}>
                   {isAuthLoading ? (
                     <div className="w-8 h-8 bg-gray-600 rounded-full animate-pulse"></div>
                   ) : isAuthenticated ? (
@@ -276,10 +279,10 @@ const HomePage = ({
                 </div>
             </section>
 
-            {/* Overlay for Sidebar */}
+            {/* Overlay for Sidebar - Covers entire screen including header */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-50 z-40 top-[68px]"
+                    className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
                     onClick={() => setIsSidebarOpen(false)}
                 ></div>
             )}
